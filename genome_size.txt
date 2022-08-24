@@ -1,0 +1,26 @@
+Organism_ID	ncbi_median_genome_size	ncbi_GC_%
+Acinetobacter baumannii	3964860	39
+Klebsiella pneumoniae	5596280	57.1266
+Pseudomonas aeruginosa	6633990	66.2
+Klebsiella aerogenes	5260680	55
+Serratia marcescens	5226210	59.7
+Morganella morganii	3965470	51
+Citrobacter koseri	4826280	53.8
+Proteus mirabilis	4013140	38.9
+Proteus vulgaris	4076130	38
+Klebsiella oxytoca	6027560	55.1
+Providencia rettgeri	4624930	40.4013
+Citrobacter freundii	5258460	51.7547
+Providencia stuartii	4408940	41.5
+Klebsiella variicola	5668450	57.2
+Neisseria meningitidis	2129710	51.7
+Neisseria gonorrhoeae	2145040	52.4
+Streptococcus pneumoniae	2085980	39.6
+Staphylococcus aureus	2827820	32.7
+Proteus hauseri	3875930	35.7
+Enterococcus faecalis	2963810	37.4
+Enterobacter aerogenes	5260680	55
+Escherichia coli	5111740	50.6
+Escherichia fergusonii	4784440	49.8
+Enterobacter cloacae	5061680	55
+
