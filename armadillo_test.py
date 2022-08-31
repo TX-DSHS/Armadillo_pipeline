@@ -9,12 +9,17 @@ from prettytable import PrettyTable
 import base64
 from os import path, system
 import logging
-
-logging.basicConfig(filename='armadillo.log', filemode='w', level=logging.DEBUG)
-logging.debug('DEBUGGING')
-logging.info('Armadillo v0.1 starting...')
+import subprocess
+from glob import glob
+from lib.prep_SRA_submission import prep_SRA_submission
 
 grandeurSummaryFile = sys.argv[1]
+run_name = sys.argv[2]
+
+logging.basicConfig(filename='armadillo.log', filemode='w', level=logging.DEBUG)
+logging.info('Armadillo v0.1 starting on run {}'.format(run_name))
+logging.info(str(date.today()))
+
 results = pd.read_csv(grandeurSummaryFile, sep="\t", header=0, index_col=None)
 
 # Check coverage and number of contigs
@@ -79,10 +84,14 @@ for gene_list in results["amr_genes"]:
 for gene in carb_gene_labels:
     results[gene] = carb_gene_labels[gene]
 
-column = ["sample_id", "sample", "kraken2_top_species", "MASH_ID", "Status", "QCtag", "cg_coverage", "quast_contigs", "quast_length", "quast_gc_%", "blaKPC", "blaNDM", "blaOXA-48", "blaVIM", "blaIMP", "blaOXA-23", "blaOXA-24/40", "blaOXA-58"]
+column = ["sample_id", "sample", "kraken2_top_species", "MASH_ID", "Status", "QCtag", "cg_coverage", 
+          "quast_contigs", "quast_length", "quast_gc_%", "blaKPC", "blaNDM", "blaOXA-48", "blaVIM", 
+          "blaIMP", "blaOXA-23", "blaOXA-24/40", "blaOXA-58"]
 
 results.to_csv("qc_results.tsv", sep = "\t", columns = column, index = False)
 results.to_excel("qc_results.xlsx", header = True, columns = column, index = False)
+
+prep_SRA_submission("qc_results.tsv", run_name)
 
 passSamples = list(results[results["Status"] == "Complete"]["sample"])
 passSample_Ids = list(results[results["Status"] == "Complete"]["sample_id"])
@@ -95,7 +104,18 @@ img_tag = '<img src="data:image/png;base64,{0}">'.format(data_uri)
 footnote = open("/home/jiel/bin/armadillo/footnote.txt", 'r')
 footnote = footnote.readlines()
 footnote = ("\n").join(footnote)
+
+reads_dir = "/home/dnalab/reads/{}/".format(run_name)
+subprocess.run(["mkdir", "-p", "SRA_seq"])
 for s, id, name in zip(passSamples, passSample_Ids, passSample_name):
+    # link fastq files to SRA_seq folder
+    fastqs = reads_dir + s + "*"
+    for fastq in glob(fastqs):
+        #print(fastq)
+        filelink = "SRA_seq/"+ path.basename(fastq)
+        subprocess.run(["ln", "-s", fastq, filelink])
+
+    # create pdf reports for each passed sample    
     genus = name.split(" ")[0]
     species = name.split(" ")[1]
     amrFile = "ncbi-AMRFinderplus/"+ s + "_amrfinder_plus.txt"
@@ -142,13 +162,13 @@ for s, id, name in zip(passSamples, passSample_Ids, passSample_name):
     pdfkit.from_file(id +"_amrfinder_plus_report.html", id + "_amrfinder_plus_report.pdf", options = options)
 
     # copy contigs fastas to cluster
-    contig_fasta = "contigs/"+ s + "_contigs.fa"
-    fasta_path = "/home/dnalab/cluster/" + genus + "_" + species
-    fasta_name = s + "_contigs.fa"
-    if not path.exists(fasta_path):
-       system("mkdir {}".format(fasta_path))
-    else:
-       system("cp {} {}/{}".format(contig_fasta, fasta_path, fasta_name))
-       system("aws s3 cp {} s3://804609861260-bioinformatics-infectious-disease/cluster/{}_{}/{} --region us-gov-west-1".format(contig_fasta, genus, species, fasta_name)) 
+    # contig_fasta = "contigs/"+ s + "_contigs.fa"
+    # fasta_path = "/home/dnalab/cluster/" + genus + "_" + species
+    # fasta_name = s + "_contigs.fa"
+    # if not path.exists(fasta_path):
+    #    system("mkdir {}".format(fasta_path))
+    # else:
+    #    system("cp {} {}/{}".format(contig_fasta, fasta_path, fasta_name))
+    #    system("aws s3 cp {} s3://804609861260-bioinformatics-infectious-disease/cluster/{}_{}/{} --region us-gov-west-1".format(contig_fasta, genus, species, fasta_name)) 
 
 logging.info('Armadillo finished')
