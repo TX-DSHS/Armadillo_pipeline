@@ -1,1 +1,1 @@
-*sample_name	sample_title	bioproject_accession	*organism	*collected_by	*collection_date	*geo_loc_name	*host	*host_disease	*isolate	*isolation_source	*lat_lon
+*sample_name	sample_title	bioproject_accession	*organism	*collection_date	*geo_loc_name	*host	*host_disease	*isolate	*isolation_source	*sample_type
