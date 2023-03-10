@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 # Armadillo pipeline 
 # Author: Jie.Lu@dshs.texas.gov
-version = 0.1-12/8/2022
+version = 0.1-2/21/2023
 
 import sys
 import argparse
+import re
 import pandas as pd
 import numpy as np
 import sqlite3
@@ -17,6 +18,7 @@ import logging
 import subprocess
 from glob import glob
 from lib.prep_SRA_submission import prep_SRA_submission
+from lib.presence_gene_family import check_gene_family
 
 def updateSQLiteTable(results):
     conn = sqlite3.connect("/home/dnalab/database/arln.sqlite")
@@ -112,7 +114,8 @@ for gene_list in results["amr_genes"]:
             checklist["blaVIM"] = "DETECTED"
         elif gene.startswith("blaIMP"):
             checklist["blaIMP"] = "DETECTED"
-        
+
+
     #print(checklist)
     for gene in checklist:
         carb_gene_labels[gene].append(checklist[gene])
@@ -126,10 +129,9 @@ column = ["sample_id", "run_name", "kraken2_top_species", "MASH_ID", "Status", "
           "blaIMP", "blaOXA-23", "blaOXA-24/40", "blaOXA-58", "virulence_genes", "mlst"]
 
 results.sort_values(by="sample_id", ascending=True, inplace=True)
-results.to_csv("qc_results.tsv", sep = "\t", columns = column, index = False)
-results.to_excel("qc_results.xlsx", header = True, columns = column, index = False)
+
 results_metadata = pd.merge(results, metadata, left_on = "sample_id", right_on = "Sample_ID", how = "left")
-results_metadata.to_csv("demo_results.tsv", sep = "\t", index = False)
+#results_metadata.to_csv("demo_results.tsv", sep = "\t", index = False)
 
 # Generate SRA submission files
 results_to_sra = results[results["Status"] == "Complete"]
@@ -150,6 +152,7 @@ footnote = ("\n").join(footnote)
 
 reads_dir = "/home/dnalab/reads/{}/".format(run_name)
 subprocess.run(["mkdir", "-p", "SRA_seq"])
+
 for s, id, name, mlst in zip(passSamples, passSample_Ids, passSample_name, passSample_mlst):
     # link fastq files to SRA_seq folder
     fastqs = reads_dir + s + "*"
@@ -166,6 +169,12 @@ for s, id, name, mlst in zip(passSamples, passSample_Ids, passSample_name, passS
     outname = id +"_amrfinder_plus_report.txt"
     #Name	Protein identifier	Contig id	Start	Stop	Strand	Gene symbol	Sequence name	Scope	Element type	Element subtype	Class	Subclass	Method	Target length	Reference sequence length	% Coverage of reference sequence	% Identity to reference sequence	Alignment length	Accession of closest sequence	Name of closest sequence	HMM id	HMM description
     df.to_csv(outname, sep = "\t", columns = amrheader, index = False)
+    try:
+        oxa_families = check_gene_family(df["Name of closest sequence"])
+        for family in oxa_families:
+            results.loc[results["sample_id"] == id, family] = oxa_families[family]
+    except:
+        pass
     # open csv file
     a = open(outname, 'r')
     # read the csv file
@@ -216,4 +225,6 @@ for s, id, name, mlst in zip(passSamples, passSample_Ids, passSample_name, passS
        system("cp {} {}/{}".format(contig_fasta, fasta_path, fasta_name))
        system("aws s3 cp {} s3://804609861260-bioinformatics-infectious-disease/cluster/{}_{}/{} --region us-gov-west-1".format(contig_fasta, genus, species, fasta_name)) 
 
+results.to_csv("qc_results.tsv", sep = "\t", columns = column, index = False)
+results.to_excel("qc_results.xlsx", header = True, columns = column, index = False)
 logging.info('Armadillo finished')
