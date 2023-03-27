@@ -5,10 +5,10 @@
 import re
 
 def check_gene_family(gene_list):
-    oxa_families = {"blaOXA-23":"NOT DETECTED",
-                    "blaOXA-24/40": "NOT DETECTED", 
-                    "blaOXA-58": "NOT DETECTED",
-                    "blaOXA-48": "NOT DETECTED"}
+    oxa_families = {"blaOXA-23":"NOT_DETECTED",
+                    "blaOXA-24/40": "NOT_DETECTED", 
+                    "blaOXA-58": "NOT_DETECTED",
+                    "blaOXA-48": "NOT_DETECTED"}
     for amrgene in gene_list:
         if re.search(r"\bOXA-24\b", amrgene) or re.search(r"\bOXA-40\b", amrgene):
             oxa_families["blaOXA-24/40"] = "DETECTED"
