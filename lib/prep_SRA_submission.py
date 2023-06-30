@@ -47,10 +47,11 @@ def prep_SRA_submission(results, run_name):
 
             new_row_attr = {"*sample_name": sample_id, "bioproject_accession": "PRJNA288601", "*organism": row["kraken2_top_species"], 
                              "*collection_date": date.today().year, "*geo_loc_name": "USA", "*host":"Homo sapiens",	
-                            "*host_disease":"missing",	"*isolate": "whole organism", "*isolation_source": sourceSite, "*sample_type": sample_id}
+                            "*host_disease":"missing",	"*isolate": sample_id, "*isolation_source": sourceSite, "*sample_type": "whole organism"}
             attribute = attribute.append(new_row_attr, ignore_index = True)
     metadata.to_csv(run_name + "_SRA_metadata.tsv", sep = "\t", index = False)
     attribute.to_csv(run_name + "_SRA_attribute.tsv", sep = "\t", index = False)
+    return results
 
 if __name__ == "__main__":
     prep_SRA_submission("qc_results.tsv", "AR_221205_M05358")
