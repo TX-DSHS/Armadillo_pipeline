@@ -69,9 +69,9 @@ results['GAMMA_Other_AR_Genes'] = results['GAMMA_Other_AR_Genes'].fillna("Not de
 # except:
 #     pass
 
-########################################################
+###################################################################
 # Check the presence of non-OXA family genes
-#########################################################
+###################################################################
 checklist = {}
 carb_genes = ["blaKPC", "blaNDM", "blaOXA-48", "blaVIM", "blaIMP", "blaOXA-23", "blaOXA-24/40", "blaOXA-58"]
 oxa_family = {}
@@ -85,6 +85,7 @@ carb_gene_labels = {}
 for carb_gene in carb_genes:
     carb_gene_labels[carb_gene] = []
 
+# Check the presence of KPC/NDM/VIM/IMP gene families
 for gene_list in results["GAMMA_Beta_Lactam_Resistance_Genes"]:
     for carb_gene in carb_genes:
         checklist[carb_gene] = "NOT_DETECTED"
@@ -104,12 +105,9 @@ for gene_list in results["GAMMA_Beta_Lactam_Resistance_Genes"]:
         elif gene.startswith("blaIMP"):
             checklist["blaIMP"] = "DETECTED"
 
-
-    #print(checklist)
     for gene in checklist:
         carb_gene_labels[gene].append(checklist[gene])
 
-#print(carb_gene_labels)
 for gene in carb_gene_labels:
     results[gene] = carb_gene_labels[gene]
 
@@ -122,8 +120,11 @@ results.sort_values(by="HAIseq_ID", ascending=True, inplace=True)
 results_to_sra = results[results["Auto_QC_Outcome"] == "PASS"]
 results_to_sra = results_to_sra[results_to_sra["ID"].str.contains('CON') == False] 
 results_metadata = prep_SRA_submission(results_to_sra, run_name)
-print(results_metadata)
+#print(results_metadata)
 
+#####################################################################
+# create pdf reports for each passed sample    
+#####################################################################
 passSamples = list(results_metadata[results_metadata["Auto_QC_Outcome"] == "PASS"]["ID"])
 passSample_Ids = list(results_metadata[results_metadata["Auto_QC_Outcome"] == "PASS"]["HAIseq_ID"])
 passSample_name = list(results_metadata[results_metadata["Auto_QC_Outcome"] == "PASS"]["Species"])
@@ -132,7 +133,6 @@ passSample_specimen_id = list(results_metadata[results_metadata["Auto_QC_Outcome
 passSample_beta_lactam = list(results_metadata[results_metadata["Auto_QC_Outcome"] == "PASS"]["GAMMA_Beta_Lactam_Resistance_Genes"])
 passSample_other_AR = list(results_metadata[results_metadata["Auto_QC_Outcome"] == "PASS"]["GAMMA_Other_AR_Genes"])
 
-#amrheader = ["Gene symbol", "Sequence name"]
 
 data_uri = base64.b64encode(open('/home/jiel/bin/armadillo/DSHS_Banner.png', 'rb').read()).decode('utf-8')
 img_tag = '<img src="data:image/png;base64,{0}">'.format(data_uri)
@@ -146,11 +146,7 @@ subprocess.run(["mkdir", "-p", "SRA_seq"])
 refseq = pd.read_csv("/home/dnalab/ReferenceGeneCatalog_3.11_20230417.txt", sep="\t", header=0, index_col=None)
 refseq['allele'] = refseq['allele'].fillna(refseq['gene_family'])
 
-
-
 for s, id, name, mlst, specimen_id, beta_lactam, other_AR in zip(passSamples, passSample_Ids, passSample_name, passSample_mlst, passSample_specimen_id, passSample_beta_lactam, passSample_other_AR):
-
-    # create pdf reports for each passed sample    
 
     # check the presence of OXA family genes
 
@@ -173,6 +169,7 @@ for s, id, name, mlst, specimen_id, beta_lactam, other_AR in zip(passSamples, pa
     all_amr_genes = [ i.split("_")[0] for i in all_amr_genes]
     all_amr_genes = pd.DataFrame({"Gene_symbol": all_amr_genes})
     all_amr_genes = pd.merge(all_amr_genes, refseq, left_on = "Gene_symbol", right_on = "allele", how = "left")
+    
     all_amr_genes["product_name"] = all_amr_genes["product_name"].fillna("Description not found")
     all_amr_genes = all_amr_genes[["Gene_symbol", "product_name"]]
     all_amr_genes = all_amr_genes.drop_duplicates()
@@ -262,7 +259,7 @@ for s, id, name, mlst, specimen_id, beta_lactam, other_AR in zip(passSamples, pa
 column = ["HAIseq_ID", "run_name", "Species", "Auto_QC_Outcome", "Auto_QC_Failure_Reason", 
           "Estimated_Coverage", "Genome_Length", "Assembly_Ratio_(STDev)", "#_of_Scaffolds_>500bp", "GC_%", 
           "blaKPC", "blaNDM", "blaOXA-48", "blaVIM", "blaIMP", "blaOXA-23", "blaOXA-24/40", "blaOXA-58", 
-          "Hypervirulence_Genes", "MLST_1"
+          "Hypervirulence_Genes", "MLST_1", "GAMMA_Beta_Lactam_Resistance_Genes", "GAMMA_Other_AR_Genes"
          ]
 results.to_csv("qc_results.tsv", sep = "\t", columns = column, index = False)
 results.to_excel("qc_results.xlsx", header = True, columns = column, index = False)
