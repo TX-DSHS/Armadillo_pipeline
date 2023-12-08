@@ -22,9 +22,11 @@ def prep_SRA_submission(results, run_name):
         except:
             results["SourceSite"] = "missing"
             results["Submitter"] = "missing"
+            results["KEY"] = "missing"
     else:
         results["SourceSite"] = "missing"
         results["Submitter"] = "missing"
+        results["KEY"] = "missing"
     
     results.sort_values(by="sample_id", ascending=True, inplace=True)
 

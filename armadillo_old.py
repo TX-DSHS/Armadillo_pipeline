@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 # Armadillo pipeline 
 # Author: Jie.Lu@dshs.texas.gov
-
-version = 0.1-9/7/2022
+version = 0.1-2/21/2023
 
 import sys
+import argparse
+import re
 import pandas as pd
 import numpy as np
 import sqlite3
@@ -17,9 +18,10 @@ import logging
 import subprocess
 from glob import glob
 from lib.prep_SRA_submission import prep_SRA_submission
+from lib.presence_gene_family import check_gene_family
 
 def updateSQLiteTable(results):
-    conn = sqlite3.connect("/home/jiel/bin/armadillo/database/arln.sqlite")
+    conn = sqlite3.connect("/home/dnalab/database/arln.sqlite")
     results.to_sql("results", conn, if_exists="append")
     # cur = conn.cursor()
     # cur.execute("SELECT * FROM results")
@@ -29,18 +31,35 @@ def updateSQLiteTable(results):
     conn.close()
     return
 
-grandeurSummaryFile = sys.argv[1]
-run_name = sys.argv[2]
+def readMetadata():
+    # Read sqlite query results into a pandas DataFrame
+    conn = sqlite3.connect("/home/dnalab/database/arln.sqlite")
+    df = pd.read_sql_query("SELECT * from metadata", conn)
+
+    # Verify that result of SQL query is stored in the dataframe
+    #print(df.head())
+    conn.close()
+    return df
+
+my_parser = argparse.ArgumentParser()
+my_parser.add_argument("-i", help = 'Grandeur output: grandeur_results.tsv', default = "grandeur_results.tsv")
+my_parser.add_argument("-r", help = 'Run name')
+my_parser.add_argument("-c", help = 'Minimal coverage (defaul = 30)', default = 30)
+args = my_parser.parse_args()
+grandeurSummaryFile = args.i
+run_name = args.r
+min_coverage = args.c
 
 logging.basicConfig(filename = 'armadillo.log', filemode = 'a', level = logging.DEBUG)
-logging.info('Armadillo %s starting on run {}'.format(version, run_name))
+logging.info('Armadillo v0.1 starting on run {}'.format(run_name))
 logging.info(str(date.today()))
 
 results = pd.read_csv(grandeurSummaryFile, sep="\t", header=0, index_col=None)
+metadata = readMetadata()
 
 # Check coverage and number of contigs
-passQC = np.where((results["cg_coverage"] >= 40), "Complete", "Failed_QC")
-QCtag1 = np.where(results["cg_coverage"] < 40, "Low_Coverage(<40)", "")
+passQC = np.where((results["cg_coverage"] >= min_coverage), "Complete", "Failed_QC")
+QCtag1 = np.where(results["cg_coverage"] < min_coverage, "Low_Coverage(<{})".format(min_coverage), "")
 QCtag2 = np.where(results["quast_contigs"] >=200, "Warining:large_num_contigs(>=200)", "")
 QCtag = []
 for a,b in zip(QCtag1, QCtag2):
@@ -57,7 +76,7 @@ results["QCtag"] = QCtag
 results["analysis_date"] = [str(date.today())] * len(results)
 results["run_name"] = [run_name] * len(results)
 
-updateSQLiteTable(results)
+#updateSQLiteTable(results)
 
 # Check genome size and GC content
 ncbi_genome_size = pd.read_csv("/home/jiel/bin/armadillo/genome_size.txt", sep = "\t", header = 0)
@@ -65,7 +84,7 @@ results["MASH_ID"] = results["mash_genus"] + " " + results["mash_species"]
 results = pd.merge(results, ncbi_genome_size, left_on = "kraken2_top_species", right_on = "Organism_ID", how = "left")
 
 #sample_id       sample  seqyclean_pairs_kept    seqyclean_percent_kept  fastqc_1_reads  fastqc_2_reads  mash_genome_size        mash_coverage   mash_genus      mash_species    mash_full       mash_pvalue
-#     mash_distance   fastani_ref_top_hit     fastani_ani_score       fastani_per_aligned_seq_matches quast_gc_%      quast_contigs   quast_N50       quast_length    cg_average_read_length  cg_average_quality      cg_coverage     ref_genome_length       amr_genes       virulence_genes
+#     mash_distance   fastani_ref_top_hit     fastani_ani_score       fastani_per_aligned_seq_matches quast_gc_%      quast_contigs   quast_N50       quast_length    cg_average_read_length  cg_average_quality      cg_coverage     ref_genome_length       amr_genes       virulence_genes   mlst
 checklist = {}
 carb_genes = ["blaKPC", "blaNDM", "blaOXA-48", "blaVIM", "blaIMP", "blaOXA-23", "blaOXA-24/40", "blaOXA-58"]
 oxa_family = {}
@@ -81,21 +100,22 @@ for carb_gene in carb_genes:
 
 for gene_list in results["amr_genes"]:
     for carb_gene in carb_genes:
-        checklist[carb_gene] = "No"
+        checklist[carb_gene] = "NOT_DETECTED"
 
     gene_list = gene_list.replace('"', '').split(",")
     for gene in gene_list:
         if gene in oxa_family:
-            checklist[oxa_family[gene]] = "Yes"
+            checklist[oxa_family[gene]] = "DETECTED"
         elif gene.startswith("blaKPC"):
-            checklist["blaKPC"] = "Yes"
+            checklist["blaKPC"] = "DETECTED"
         elif gene.startswith("blaNDM"):
-            checklist["blaNDM"] = "Yes"
+            checklist["blaNDM"] = "DETECTED"
         elif gene.startswith("blaVIM"):
-            checklist["blaVIM"] = "Yes"
+            checklist["blaVIM"] = "DETECTED"
         elif gene.startswith("blaIMP"):
-            checklist["blaIMP"] = "Yes"
-        
+            checklist["blaIMP"] = "DETECTED"
+
+
     #print(checklist)
     for gene in checklist:
         carb_gene_labels[gene].append(checklist[gene])
@@ -106,19 +126,22 @@ for gene in carb_gene_labels:
 
 column = ["sample_id", "run_name", "kraken2_top_species", "MASH_ID", "Status", "QCtag", "cg_coverage", 
           "quast_contigs", "quast_length", "quast_gc_%", "blaKPC", "blaNDM", "blaOXA-48", "blaVIM", 
-          "blaIMP", "blaOXA-23", "blaOXA-24/40", "blaOXA-58"]
+          "blaIMP", "blaOXA-23", "blaOXA-24/40", "blaOXA-58", "virulence_genes", "mlst"]
 
-results.to_csv("qc_results.tsv", sep = "\t", columns = column, index = False)
-results.to_excel("qc_results.xlsx", header = True, columns = column, index = False)
+results.sort_values(by="sample_id", ascending=True, inplace=True)
 
+results_metadata = pd.merge(results, metadata, left_on = "sample_id", right_on = "Sample_ID", how = "left")
+#results_metadata.to_csv("demo_results.tsv", sep = "\t", index = False)
 
 # Generate SRA submission files
-prep_SRA_submission("qc_results.tsv", run_name)
+results_to_sra = results[results["Status"] == "Complete"]
+results_to_sra = results_to_sra[results_to_sra["sample_id"].str.contains('CON') == False] 
+prep_SRA_submission(results_to_sra, run_name)
 
 passSamples = list(results[results["Status"] == "Complete"]["sample"])
 passSample_Ids = list(results[results["Status"] == "Complete"]["sample_id"])
 passSample_name = list(results[results["Status"] == "Complete"]["kraken2_top_species"])
-
+passSample_mlst = list(results[results["Status"] == "Complete"]["mlst"])
 amrheader = ["Gene symbol", "Sequence name"]
 
 data_uri = base64.b64encode(open('/home/jiel/bin/armadillo/DSHS_Banner.png', 'rb').read()).decode('utf-8')
@@ -129,7 +152,8 @@ footnote = ("\n").join(footnote)
 
 reads_dir = "/home/dnalab/reads/{}/".format(run_name)
 subprocess.run(["mkdir", "-p", "SRA_seq"])
-for s, id, name in zip(passSamples, passSample_Ids, passSample_name):
+
+for s, id, name, mlst in zip(passSamples, passSample_Ids, passSample_name, passSample_mlst):
     # link fastq files to SRA_seq folder
     fastqs = reads_dir + s + "*"
     for fastq in glob(fastqs):
@@ -145,6 +169,12 @@ for s, id, name in zip(passSamples, passSample_Ids, passSample_name):
     outname = id +"_amrfinder_plus_report.txt"
     #Name	Protein identifier	Contig id	Start	Stop	Strand	Gene symbol	Sequence name	Scope	Element type	Element subtype	Class	Subclass	Method	Target length	Reference sequence length	% Coverage of reference sequence	% Identity to reference sequence	Alignment length	Accession of closest sequence	Name of closest sequence	HMM id	HMM description
     df.to_csv(outname, sep = "\t", columns = amrheader, index = False)
+    try:
+        oxa_families = check_gene_family(df["Name of closest sequence"])
+        for family in oxa_families:
+            results.loc[results["sample_id"] == id, family] = oxa_families[family]
+    except:
+        pass
     # open csv file
     a = open(outname, 'r')
     # read the csv file
@@ -163,10 +193,12 @@ for s, id, name in zip(passSamples, passSample_Ids, passSample_name):
     code = t.get_html_string(attributes={'border': 1, 'style': 'border-width: 1px; border-collapse: collapse; font-size:25px'})
     html_file = open(id + "_amrfinder_plus_report.html", 'w')
     timestamp = str(date.today())
-    html_file.write("<h1 style=\"text-align:center\">Antibiotic Resistance Genes Identified by Whole Genome Sequencing</h1>\n")
+    html_file.write("<h1 style=\"text-align:center\">Next-Generation Sequencing (NGS) Analysis Report</h1>\n")
     html_file.write(img_tag)
     html_file.write("<h2>Report date: " + timestamp + "</h2>\n")
     html_file.write("<h2>Sample ID: " + id + "</h2>\n")
+    html_file.write("<h2>MLST: " + mlst + "</h2>\n")
+    html_file.write("<h3>Table: Antimicrobial Resistance genes identified</h3>\n")
     html_file.write(code)
     html_file.write("<br><footer>"+footnote+"</footer>")
     
@@ -193,4 +225,6 @@ for s, id, name in zip(passSamples, passSample_Ids, passSample_name):
        system("cp {} {}/{}".format(contig_fasta, fasta_path, fasta_name))
        system("aws s3 cp {} s3://804609861260-bioinformatics-infectious-disease/cluster/{}_{}/{} --region us-gov-west-1".format(contig_fasta, genus, species, fasta_name)) 
 
+results.to_csv("qc_results.tsv", sep = "\t", columns = column, index = False)
+results.to_excel("qc_results.xlsx", header = True, columns = column, index = False)
 logging.info('Armadillo finished')

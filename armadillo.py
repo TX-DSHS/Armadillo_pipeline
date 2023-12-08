@@ -55,7 +55,6 @@ logging.info('Armadillo v0.1 starting on run {}'.format(run_name))
 logging.info(str(date.today()))
 
 results = pd.read_csv(grandeurSummaryFile, sep="\t", header=0, index_col=None)
-metadata = readMetadata()
 
 # Check coverage and number of contigs
 passQC = np.where((results["cg_coverage"] >= min_coverage), "Complete", "Failed_QC")
@@ -76,7 +75,11 @@ results["QCtag"] = QCtag
 results["analysis_date"] = [str(date.today())] * len(results)
 results["run_name"] = [run_name] * len(results)
 
-#updateSQLiteTable(results)
+# update the SQLite database
+try:
+    updateSQLiteTable(results)
+except:
+    pass
 
 # Check genome size and GC content
 ncbi_genome_size = pd.read_csv("/home/jiel/bin/armadillo/genome_size.txt", sep = "\t", header = 0)
@@ -130,18 +133,16 @@ column = ["sample_id", "run_name", "kraken2_top_species", "MASH_ID", "Status", "
 
 results.sort_values(by="sample_id", ascending=True, inplace=True)
 
-results_metadata = pd.merge(results, metadata, left_on = "sample_id", right_on = "Sample_ID", how = "left")
-#results_metadata.to_csv("demo_results.tsv", sep = "\t", index = False)
-
 # Generate SRA submission files
 results_to_sra = results[results["Status"] == "Complete"]
 results_to_sra = results_to_sra[results_to_sra["sample_id"].str.contains('CON') == False] 
-prep_SRA_submission(results_to_sra, run_name)
+results_metadata = prep_SRA_submission(results_to_sra, run_name)
 
-passSamples = list(results[results["Status"] == "Complete"]["sample"])
-passSample_Ids = list(results[results["Status"] == "Complete"]["sample_id"])
-passSample_name = list(results[results["Status"] == "Complete"]["kraken2_top_species"])
-passSample_mlst = list(results[results["Status"] == "Complete"]["mlst"])
+passSamples = list(results_metadata[results_metadata["Status"] == "Complete"]["sample"])
+passSample_Ids = list(results_metadata[results_metadata["Status"] == "Complete"]["sample_id"])
+passSample_name = list(results_metadata[results_metadata["Status"] == "Complete"]["kraken2_top_species"])
+passSample_mlst = list(results_metadata[results_metadata["Status"] == "Complete"]["mlst"])
+passSample_specimen_id = list(results_metadata[results_metadata["Status"] == "Complete"]["KEY"])
 amrheader = ["Gene symbol", "Sequence name"]
 
 data_uri = base64.b64encode(open('/home/jiel/bin/armadillo/DSHS_Banner.png', 'rb').read()).decode('utf-8')
@@ -153,7 +154,7 @@ footnote = ("\n").join(footnote)
 reads_dir = "/home/dnalab/reads/{}/".format(run_name)
 subprocess.run(["mkdir", "-p", "SRA_seq"])
 
-for s, id, name, mlst in zip(passSamples, passSample_Ids, passSample_name, passSample_mlst):
+for s, id, name, mlst, specimen_id in zip(passSamples, passSample_Ids, passSample_name, passSample_mlst, passSample_specimen_id):
     # link fastq files to SRA_seq folder
     fastqs = reads_dir + s + "*"
     for fastq in glob(fastqs):
@@ -216,9 +217,10 @@ for s, id, name, mlst in zip(passSamples, passSample_Ids, passSample_name, passS
     pdfkit.from_file(id +"_amrfinder_plus_report.html", id + "_amrfinder_plus_report.pdf", options = options)
 
     #copy contigs fastas to cluster
+    print(specimen_id)
     contig_fasta = "contigs/"+ s + "_contigs.fa"
     fasta_path = "/home/dnalab/cluster/" + genus + "_" + species
-    fasta_name = s + "_contigs.fa"
+    fasta_name = specimen_id + '_' + s + "_contigs.fa"
     if not path.exists(fasta_path):
        system("mkdir {}".format(fasta_path))
     else:

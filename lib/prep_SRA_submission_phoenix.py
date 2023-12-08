@@ -17,13 +17,13 @@ def prep_SRA_submission(results, run_name):
             demofile = glob("/home/dnalab/reads/{}/*.xlsx".format(run_name))[0]
             demo = pd.read_excel(demofile, engine='openpyxl')
             results = pd.merge(results, demo, left_on = "HAIseq_ID", right_on = "HAI_WGS_ID(YYYYCB-#####)", how = "left")
-            results.fillna('missing', inplace=True)
+            results["KEY"].fillna('missing', inplace=True)
             
-        except:
+        except: # demo file is in bad format
             results["SourceSite"] = "missing"
             results["Submitter"] = "missing"
             results["KEY"] = "missing"
-    else:
+    else: # if demo file does not exist
         results["SourceSite"] = "missing"
         results["Submitter"] = "missing"
         results["KEY"] = "missing"
@@ -34,7 +34,7 @@ def prep_SRA_submission(results, run_name):
     if instrument[0] == "M":
         instrument_name = "Illumina MiSeq"
     elif instrument[0] == "V":
-        instrument_name = "Illumina NovaSeq"
+        instrument_name = "Illumina NextSeq2000"
     print(instrument_name)
 
     for i, row in results.iterrows():
@@ -53,8 +53,13 @@ def prep_SRA_submission(results, run_name):
                "platform": "ILLUMINA",	"instrument_model": instrument_name, "design_description": "Illumina DNA Prep", "filetype": "fastq",
                "filename": fastq_files[0],	"filename2": fastq_files[1], "filename3": "", "filename4": "",	"assembly": "",	"fasta_file": ""}
             metadata = metadata.append(new_row_metadata, ignore_index = True)
-
-            new_row_attr = {"*sample_name": sample_id, "bioproject_accession": "PRJNA288601", "*organism": row["Species"], 
+            
+            if row["Species"] == "Staphylococcus aureus":
+                bioproject = "PRJNA533550"
+            else:
+                bioproject = "PRJNA288601"
+                
+            new_row_attr = {"*sample_name": sample_id, "bioproject_accession": bioproject, "*organism": row["Species"], 
                              "*collection_date": date.today().year, "*geo_loc_name": "USA", "*host":"Homo sapiens",	
                             "*host_disease":"missing",	"*isolate": sample_id, "*isolation_source": sourceSite, "*sample_type": "whole organism"}
             attribute = attribute.append(new_row_attr, ignore_index = True)

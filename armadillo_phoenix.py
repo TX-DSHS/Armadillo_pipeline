@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 # Armadillo pipeline 
+# Usage: python3 armadillo.py -r run_name
 # Author: Jie.Lu@dshs.texas.gov
-version = 2.0-10/3/2023
+version = 2.0-11/10/2023
 
 import sys
 import argparse
@@ -20,29 +21,8 @@ from glob import glob
 from lib.prep_SRA_submission_phoenix import prep_SRA_submission
 from lib.presence_gene_family import check_gene_family
 
-# def updateSQLiteTable(results):
-#     conn = sqlite3.connect("/home/dnalab/database/arln.sqlite")
-#     results.to_sql("results", conn, if_exists="append")
-#     # cur = conn.cursor()
-#     # cur.execute("SELECT * FROM results")
-#     # rows = cur.fetchall()
-#     # for row in rows:
-#     #     print(row)
-#     conn.close()
-#     return
-
-# def readMetadata():
-#     # Read sqlite query results into a pandas DataFrame
-#     conn = sqlite3.connect("/home/dnalab/database/arln.sqlite")
-#     df = pd.read_sql_query("SELECT * from metadata", conn)
-
-#     # Verify that result of SQL query is stored in the dataframe
-#     #print(df.head())
-#     conn.close()
-#     return df
-
 my_parser = argparse.ArgumentParser()
-my_parser.add_argument("-i", help = 'Grandeur output: grandeur_results.tsv', default = "results/Phoenix_Summary.tsv")
+my_parser.add_argument("-i", help = 'Phoenix summary file: Phoenix_Summary.tsv', default = "results/Phoenix_Summary.tsv")
 my_parser.add_argument("-r", help = 'Run name')
 
 args = my_parser.parse_args()
@@ -59,15 +39,10 @@ logging.info(str(date.today()))
 results = pd.read_csv(phoenixSummaryFile, sep="\t", header=0, index_col=None)
 results["HAIseq_ID"] = results["ID"].str[:12]
 results["run_name"] = run_name
+
+# Replace missing values with "Not detected" for the AR gene columns
 results['GAMMA_Beta_Lactam_Resistance_Genes'] = results['GAMMA_Beta_Lactam_Resistance_Genes'].fillna("Not detected")
 results['GAMMA_Other_AR_Genes'] = results['GAMMA_Other_AR_Genes'].fillna("Not detected")
-
-
-# # update the SQLite database
-# try:
-#     updateSQLiteTable(results)
-# except:
-#     pass
 
 ###################################################################
 # Check the presence of non-OXA family genes
@@ -143,6 +118,9 @@ footnote = ("\n").join(footnote)
 reads_dir = "/home/dnalab/reads/{}/".format(run_name)
 subprocess.run(["mkdir", "-p", "SRA_seq"])
 
+# Make sure to download the version of the database that matches with Pheonix version: 
+# https://ftp.ncbi.nlm.nih.gov/pathogen/Antimicrobial_resistance/AMRFinderPlus/database/
+
 refseq = pd.read_csv("/home/dnalab/ReferenceGeneCatalog_3.11_20230417.txt", sep="\t", header=0, index_col=None)
 refseq['allele'] = refseq['allele'].fillna(refseq['gene_family'])
 
@@ -164,7 +142,8 @@ for s, id, name, mlst, specimen_id, beta_lactam, other_AR in zip(passSamples, pa
     
     else:
         all_amr_genes = ["Not detected"]
-        
+
+    # Generate the AMR gene table for html    
     amrheader = ["Gene_symbol", "product_name"]
     all_amr_genes = [ i.split("_")[0] for i in all_amr_genes]
     all_amr_genes = pd.DataFrame({"Gene_symbol": all_amr_genes})
@@ -184,11 +163,8 @@ for s, id, name, mlst, specimen_id, beta_lactam, other_AR in zip(passSamples, pa
     except:
         pass
 
-    # open csv file
     a = open(outname, 'r')
-    # read the csv file
     a = a.readlines()
-    # Separating the Headers
     l1 = a[0]
     l1 = l1.split('\t')
 
@@ -207,10 +183,12 @@ for s, id, name, mlst, specimen_id, beta_lactam, other_AR in zip(passSamples, pa
     html_file.write(img_tag)
     html_file.write("<h2>Report date: " + timestamp + "</h2>\n")
     html_file.write("<h2>Sample ID: " + id + "</h2>\n")
+    html_file.write("<h2>TX ID: " + specimen_id + "</h2>\n")
+    html_file.write("<h2>Species ID: " + name + "</h2>\n")
     html_file.write("<h2>MLST: " + mlst + "</h2>\n")
     html_file.write("<h3>Table: Antimicrobial Resistance genes identified</h3>\n")
     html_file.write(code)
-    html_file.write("<br><footer>"+footnote+"</footer>")
+    html_file.write("<br><footer>" + footnote + "</footer>")
     
     options = {
     'page-size': 'Letter',
@@ -228,24 +206,27 @@ for s, id, name, mlst, specimen_id, beta_lactam, other_AR in zip(passSamples, pa
     # link fastq files to SRA_seq folder
     fastqs = reads_dir + id + "*"
     for fastq in glob(fastqs):
-        #print(fastq)
+        #print(path.basename(fastq))
         filelink = "SRA_seq/"+ path.basename(fastq)
         subprocess.run(["ln", "-s", fastq, filelink])
-
+        # copy fastq files to S3 ARLN/FASTQ folder
+        if not fastq.startswith("CON") and specimen_id != "missing": # do not upload controls and samples without HAI-seq IDs.
+           system("aws s3 cp {} s3://804609861260-bioinformatics-infectious-disease/ARLN/FASTQ/{} --region us-gov-west-1".format(fastq, path.basename(fastq))) 
 
     #copy contigs fastas to cluster folder on S3
     print(specimen_id)
     genus = name.split(" ")[0]
     species = name.split(" ")[1]
-    contig_fasta = "results/" + s + "/assembly"+ s + ".contigs.fa.gz"
+    contig_fasta = "results/" + s + "/assembly/"+ s + ".contigs.fa.gz"
     fasta_path = "/home/dnalab/cluster/" + genus + "_" + species
-    fasta_name = specimen_id + '_' + s + "_contigs.fa.gz"
-    print(contig_fasta, fasta_name)
-    # if not path.exists(fasta_path):
-    #    system("mkdir {}".format(fasta_path))
-    # else:
-    #    system("cp {} {}/{}".format(contig_fasta, fasta_path, fasta_name))
-    #    system("aws s3 cp {} s3://804609861260-bioinformatics-infectious-disease/cluster/{}_{}/{} --region us-gov-west-1".format(contig_fasta, genus, species, fasta_name)) 
+    fasta_name = s + "_" + specimen_id + "_contigs.fa.gz"
+    #print(contig_fasta, fasta_name)
+    if not path.exists(fasta_path):
+       system("mkdir {}".format(fasta_path))
+    else:
+       if not fastq.startswith("CON") and specimen_id != "missing":
+           system("cp {} {}/{}".format(contig_fasta, fasta_path, fasta_name))
+           system("aws s3 cp {} s3://804609861260-bioinformatics-infectious-disease/cluster/{}_{}/{} --region us-gov-west-1".format(contig_fasta, genus, species, fasta_name)) 
 
 #####################################
 # write results to qc_results.xlsx
@@ -259,8 +240,40 @@ for s, id, name, mlst, specimen_id, beta_lactam, other_AR in zip(passSamples, pa
 column = ["HAIseq_ID", "run_name", "Species", "Auto_QC_Outcome", "Auto_QC_Failure_Reason", 
           "Estimated_Coverage", "Genome_Length", "Assembly_Ratio_(STDev)", "#_of_Scaffolds_>500bp", "GC_%", 
           "blaKPC", "blaNDM", "blaOXA-48", "blaVIM", "blaIMP", "blaOXA-23", "blaOXA-24/40", "blaOXA-58", 
-          "Hypervirulence_Genes", "MLST_1", "GAMMA_Beta_Lactam_Resistance_Genes", "GAMMA_Other_AR_Genes"
+          "Hypervirulence_Genes", "MLST_1","MLST_2","GAMMA_Beta_Lactam_Resistance_Genes", "GAMMA_Other_AR_Genes",
+          "Taxa_Confidence", "Taxa_Coverage", "Taxa_Source", "Kraken2_Trimd", "Kraken2_Weighted"
          ]
+
+# Write to qc_results
+if glob("/home/dnalab/reads/{}/*.xlsx".format(run_name)):
+    try:   # if demo file is included and has the right format, include "KEY" in the qc_results
+        demofile = glob("/home/dnalab/reads/{}/*.xlsx".format(run_name))[0]
+        demo = pd.read_excel(demofile, engine='openpyxl')
+        results = pd.merge(results, demo, left_on = "HAIseq_ID", right_on = "HAI_WGS_ID(YYYYCB-#####)", how = "left")
+        results.fillna('missing', inplace=True)
+        results.sort_values(by="HAIseq_ID", ascending=True, inplace=True)
+        column = ["HAIseq_ID", "run_name", "KEY","Species", "Auto_QC_Outcome", "Auto_QC_Failure_Reason", 
+          "Estimated_Coverage", "Genome_Length", "Assembly_Ratio_(STDev)", "#_of_Scaffolds_>500bp", "GC_%", 
+          "blaKPC", "blaNDM", "blaOXA-48", "blaVIM", "blaIMP", "blaOXA-23", "blaOXA-24/40", "blaOXA-58", 
+          "Hypervirulence_Genes", "MLST_1","MLST_2","GAMMA_Beta_Lactam_Resistance_Genes", "GAMMA_Other_AR_Genes",
+          "Taxa_Confidence", "Taxa_Coverage", "Taxa_Source", "Kraken2_Trimd", "Kraken2_Weighted"
+         ]
+    except:
+        column = ["HAIseq_ID", "run_name", "Species", "Auto_QC_Outcome", "Auto_QC_Failure_Reason", 
+          "Estimated_Coverage", "Genome_Length", "Assembly_Ratio_(STDev)", "#_of_Scaffolds_>500bp", "GC_%", 
+          "blaKPC", "blaNDM", "blaOXA-48", "blaVIM", "blaIMP", "blaOXA-23", "blaOXA-24/40", "blaOXA-58", 
+          "Hypervirulence_Genes", "MLST_1","MLST_2","GAMMA_Beta_Lactam_Resistance_Genes", "GAMMA_Other_AR_Genes",
+          "Taxa_Confidence", "Taxa_Coverage", "Taxa_Source", "Kraken2_Trimd", "Kraken2_Weighted"
+         ]
+        
+else:  # if demo file does not exist, include "KEY" in the qc_results
+    column = ["HAIseq_ID", "run_name", "Species", "Auto_QC_Outcome", "Auto_QC_Failure_Reason", 
+          "Estimated_Coverage", "Genome_Length", "Assembly_Ratio_(STDev)", "#_of_Scaffolds_>500bp", "GC_%", 
+          "blaKPC", "blaNDM", "blaOXA-48", "blaVIM", "blaIMP", "blaOXA-23", "blaOXA-24/40", "blaOXA-58", 
+          "Hypervirulence_Genes", "MLST_1","MLST_2","GAMMA_Beta_Lactam_Resistance_Genes", "GAMMA_Other_AR_Genes",
+          "Taxa_Confidence", "Taxa_Coverage", "Taxa_Source", "Kraken2_Trimd", "Kraken2_Weighted"
+         ]
+
 results.to_csv("qc_results.tsv", sep = "\t", columns = column, index = False)
 results.to_excel("qc_results.xlsx", header = True, columns = column, index = False)
 logging.info('Armadillo finished')
