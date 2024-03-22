@@ -28,7 +28,7 @@ done
 # Run Grandeur pipeline
 cd $basedir/results/$1
 nextflow run /pipeline/ARLN/Grandeur/grandeur_mlst.nf -profile singularity -c /pipeline/ARLN/Grandeur/configs/AMR.config --reads $basedir/reads/$1 --outdir $basedir/results/$1
-rm -r $basedir/results/$1/work
+#rm -r $basedir/results/$1/work
 rm -r $basedir/results/$1/shuffled
 rm $basedir/results/zip/$1.zip
 # Run Armadillo pipeline

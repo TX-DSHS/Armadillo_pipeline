@@ -198,6 +198,7 @@ for s, id, name, mlst, specimen_id in zip(passSamples, passSample_Ids, passSampl
     html_file.write(img_tag)
     html_file.write("<h2>Report date: " + timestamp + "</h2>\n")
     html_file.write("<h2>Sample ID: " + id + "</h2>\n")
+    #html_file.write("<h2>TX ID: " + specimen_id + "</h2>\n")
     html_file.write("<h2>MLST: " + mlst + "</h2>\n")
     html_file.write("<h3>Table: Antimicrobial Resistance genes identified</h3>\n")
     html_file.write(code)
