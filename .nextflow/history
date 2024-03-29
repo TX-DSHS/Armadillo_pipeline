@@ -1,0 +1,1 @@
+2024-03-29 19:48:06	21m 15s	mighty_laplace	OK	61a5657665d289eab1764260e1112f0a	d24de2d4-7722-4913-b296-e53b26fc49fb	nextflow run grandeur_mlst.nf -c AMR.config --reads reads/AR_240223_M08451B --outdir results/AR_240223_M08451B

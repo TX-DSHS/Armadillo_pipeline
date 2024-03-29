@@ -5,16 +5,17 @@ from glob import glob
 from os import path
 from datetime import date
 
-def prep_SRA_submission(results, run_name):
-    reads_dir = "/home/dnalab/reads/{}/".format(run_name)
-    metadata = pd.read_csv("/home/jiel/bin/armadillo/template/SRA_metadata_template.txt", sep="\t", header=0, index_col=None)
-    attribute = pd.read_csv("/home/jiel/bin/armadillo/template/attribute_template.txt", sep="\t", header=0, index_col=None)
+def prep_SRA_submission(results, run_name, basedir):
+    
+    reads_dir = basedir+"/reads/{}/".format(run_name)
+    metadata = pd.read_csv(basedir + "/template/SRA_metadata_template.txt", sep="\t", header=0, index_col=None)
+    attribute = pd.read_csv(basedir + "/template/attribute_template.txt", sep="\t", header=0, index_col=None)
     
     # Check if demo file exists
 
-    if glob("/home/dnalab/reads/{}/*.xlsx".format(run_name)):
+    if glob(basedir + "/reads/{}/*.xlsx".format(run_name)):
         try:
-            demofile = glob("/home/dnalab/reads/{}/*.xlsx".format(run_name))[0]
+            demofile = glob(basedir + "/reads/{}/*.xlsx".format(run_name))[0]
             demo = pd.read_excel(demofile, engine='openpyxl')
             results = pd.merge(results, demo, left_on = "HAIseq_ID", right_on = "HAI_WGS_ID(YYYYCB-#####)", how = "left")
             results["KEY"].fillna('missing', inplace=True)
@@ -68,4 +69,4 @@ def prep_SRA_submission(results, run_name):
     return results
 
 if __name__ == "__main__":
-    prep_SRA_submission("qc_results.tsv", "AR_221205_M05358")
+    prep_SRA_submission("qc_results.tsv", "AR_221205_M05358", "/bioinformatics/Armadillo_pipeline")

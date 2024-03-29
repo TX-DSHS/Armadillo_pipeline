@@ -2,7 +2,7 @@
 # Armadillo pipeline 
 # Usage: python3 armadillo.py -r run_name
 # Author: Jie.Lu@dshs.texas.gov
-version = 2.0-11/10/2023
+version = "2.0-03/29/2024"
 
 import sys
 import argparse
@@ -24,10 +24,15 @@ from lib.presence_gene_family import check_gene_family
 my_parser = argparse.ArgumentParser()
 my_parser.add_argument("-i", help = 'Phoenix summary file: Phoenix_Summary.tsv', default = "results/Phoenix_Summary.tsv")
 my_parser.add_argument("-r", help = 'Run name')
+my_parser.add_argument("-d", help = 'installation dir')
+my_parser.add_argument("-a", help = 'AWS bucket name')
 
 args = my_parser.parse_args()
 phoenixSummaryFile = args.i
 run_name = args.r
+basedir = args.d
+aws_bucket = args.a
+print(phoenixSummaryFile)
 
 logging.basicConfig(filename = 'armadillo.log', filemode = 'a', level = logging.DEBUG)
 logging.info('Armadillo {} starting on run {}'.format(version, run_name))
@@ -50,7 +55,7 @@ results['GAMMA_Other_AR_Genes'] = results['GAMMA_Other_AR_Genes'].fillna("Not de
 checklist = {}
 carb_genes = ["blaKPC", "blaNDM", "blaOXA-48", "blaVIM", "blaIMP", "blaOXA-23", "blaOXA-24/40", "blaOXA-58"]
 oxa_family = {}
-with open("/home/jiel/bin/armadillo/oxa_family.tsv", "r") as f:
+with open(basedir + "/oxa_family.tsv", "r") as f:
     for line in f:
         line = line.rstrip()
         family, oxa_gene = line.split("\t")
@@ -94,7 +99,7 @@ results.sort_values(by="HAIseq_ID", ascending=True, inplace=True)
 
 results_to_sra = results[results["Auto_QC_Outcome"] == "PASS"]
 results_to_sra = results_to_sra[results_to_sra["ID"].str.contains('CON') == False] 
-results_metadata = prep_SRA_submission(results_to_sra, run_name)
+results_metadata = prep_SRA_submission(results_to_sra, run_name, basedir)
 #print(results_metadata)
 
 #####################################################################
@@ -109,19 +114,19 @@ passSample_beta_lactam = list(results_metadata[results_metadata["Auto_QC_Outcome
 passSample_other_AR = list(results_metadata[results_metadata["Auto_QC_Outcome"] == "PASS"]["GAMMA_Other_AR_Genes"])
 
 
-data_uri = base64.b64encode(open('/home/jiel/bin/armadillo/DSHS_Banner.png', 'rb').read()).decode('utf-8')
+data_uri = base64.b64encode(open(basedir + '/DSHS_Banner.png', 'rb').read()).decode('utf-8')
 img_tag = '<img src="data:image/png;base64,{0}">'.format(data_uri)
-footnote = open("/home/jiel/bin/armadillo/footnote.txt", 'r')
+footnote = open(basedir + "/footnote.txt", 'r')
 footnote = footnote.readlines()
 footnote = ("\n").join(footnote)
 
-reads_dir = "/home/dnalab/reads/{}/".format(run_name)
+reads_dir = basedir + "/reads/{}/".format(run_name)
 subprocess.run(["mkdir", "-p", "SRA_seq"])
 
 # Make sure to download the version of the database that matches with Pheonix version: 
 # https://ftp.ncbi.nlm.nih.gov/pathogen/Antimicrobial_resistance/AMRFinderPlus/database/
 
-refseq = pd.read_csv("/home/dnalab/ReferenceGeneCatalog_3.11_20230417.txt", sep="\t", header=0, index_col=None)
+refseq = pd.read_csv(basedir + "/ReferenceGeneCatalog_3.11_20230417.txt", sep="\t", header=0, index_col=None)
 refseq['allele'] = refseq['allele'].fillna(refseq['gene_family'])
 
 for s, id, name, mlst, specimen_id, beta_lactam, other_AR in zip(passSamples, passSample_Ids, passSample_name, passSample_mlst, passSample_specimen_id, passSample_beta_lactam, passSample_other_AR):
@@ -211,14 +216,14 @@ for s, id, name, mlst, specimen_id, beta_lactam, other_AR in zip(passSamples, pa
         subprocess.run(["ln", "-s", fastq, filelink])
         # copy fastq files to S3 ARLN/FASTQ folder
         if not fastq.startswith("CON") and specimen_id != "missing": # do not upload controls and samples without HAI-seq IDs.
-           system("aws s3 cp {} s3://804609861260-bioinformatics-infectious-disease/ARLN/FASTQ/{} --region us-gov-west-1".format(fastq, path.basename(fastq))) 
+           system("aws s3 cp {} {}/ARLN/FASTQ/{} --region us-gov-west-1".format(fastq, aws_bucket, path.basename(fastq))) 
 
     #copy contigs fastas to cluster folder on S3
     print(specimen_id)
     genus = name.split(" ")[0]
     species = name.split(" ")[1]
     contig_fasta = "results/" + s + "/assembly/"+ s + ".contigs.fa.gz"
-    fasta_path = "/home/dnalab/cluster/" + genus + "_" + species
+    fasta_path = basedir + "/cluster/" + genus + "_" + species
     fasta_name = s + "_" + specimen_id + "_contigs.fa.gz"
     #print(contig_fasta, fasta_name)
     if not path.exists(fasta_path):
@@ -226,7 +231,7 @@ for s, id, name, mlst, specimen_id, beta_lactam, other_AR in zip(passSamples, pa
     else:
        if not fastq.startswith("CON") and specimen_id != "missing":
            system("cp {} {}/{}".format(contig_fasta, fasta_path, fasta_name))
-           system("aws s3 cp {} s3://804609861260-bioinformatics-infectious-disease/cluster/{}_{}/{} --region us-gov-west-1".format(contig_fasta, genus, species, fasta_name)) 
+           system("aws s3 cp {} {}/cluster/{}_{}/{} --region us-gov-west-1".format(contig_fasta, aws_bucket, genus, species, fasta_name)) 
 
 #####################################
 # write results to qc_results.xlsx
@@ -245,9 +250,9 @@ column = ["HAIseq_ID", "run_name", "Species", "Auto_QC_Outcome", "Auto_QC_Failur
          ]
 
 # Write to qc_results
-if glob("/home/dnalab/reads/{}/*.xlsx".format(run_name)):
+if glob(basedir + "/reads/{}/*.xlsx".format(run_name)):
     try:   # if demo file is included and has the right format, include "KEY" in the qc_results
-        demofile = glob("/home/dnalab/reads/{}/*.xlsx".format(run_name))[0]
+        demofile = glob(basedir + "/reads/{}/*.xlsx".format(run_name))[0]
         demo = pd.read_excel(demofile, engine='openpyxl')
         results = pd.merge(results, demo, left_on = "HAIseq_ID", right_on = "HAI_WGS_ID(YYYYCB-#####)", how = "left")
         results.fillna('missing', inplace=True)

@@ -1,0 +1,190 @@
+Mar-29 19:48:04.605 [main] DEBUG nextflow.cli.Launcher - $> nextflow run grandeur_mlst.nf -c AMR.config --reads reads/AR_240223_M08451B --outdir results/AR_240223_M08451B
+Mar-29 19:48:04.721 [main] INFO  nextflow.cli.CmdRun - N E X T F L O W  ~  version 21.10.6
+Mar-29 19:48:04.780 [main] INFO  nextflow.cli.CmdRun - Launching `grandeur_mlst.nf` [mighty_laplace] - revision: 61a5657665
+Mar-29 19:48:04.812 [main] DEBUG nextflow.config.ConfigBuilder - User config file: /bioinformatics/Armadillo_pipeline/AMR.config
+Mar-29 19:48:04.812 [main] DEBUG nextflow.config.ConfigBuilder - Parsing config file: /bioinformatics/Armadillo_pipeline/AMR.config
+Mar-29 19:48:04.870 [main] DEBUG nextflow.config.ConfigBuilder - Applying config profile: `standard`
+Mar-29 19:48:06.295 [main] DEBUG nextflow.plugin.PluginsFacade - Setting up plugin manager > mode=prod; plugins-dir=/home/dnalab/.nextflow/plugins
+Mar-29 19:48:06.303 [main] DEBUG nextflow.plugin.PluginsFacade - Plugins default=[]
+Mar-29 19:48:06.330 [main] INFO  org.pf4j.DefaultPluginStatusProvider - Enabled plugins: []
+Mar-29 19:48:06.332 [main] INFO  org.pf4j.DefaultPluginStatusProvider - Disabled plugins: []
+Mar-29 19:48:06.352 [main] INFO  org.pf4j.DefaultPluginManager - PF4J version 3.4.1 in 'deployment' mode
+Mar-29 19:48:06.368 [main] INFO  org.pf4j.AbstractPluginManager - No plugins
+Mar-29 19:48:06.446 [main] DEBUG nextflow.Session - Session uuid: d24de2d4-7722-4913-b296-e53b26fc49fb
+Mar-29 19:48:06.447 [main] DEBUG nextflow.Session - Run name: mighty_laplace
+Mar-29 19:48:06.448 [main] DEBUG nextflow.Session - Executor pool size: 64
+Mar-29 19:48:06.504 [main] DEBUG nextflow.cli.CmdRun - 
+  Version: 21.10.6 build 5660
+  Created: 21-12-2021 16:55 UTC 
+  System: Linux 5.4.0-1103-aws
+  Runtime: Groovy 3.0.9 on OpenJDK 64-Bit Server VM 11.0.19+7-post-Ubuntu-0ubuntu118.04.1
+  Encoding: UTF-8 (UTF-8)
+  Process: 37751@dshs4wvbioinf3b [100.92.1.87]
+  CPUs: 64 - Mem: 499.5 GB (250.4 GB) - Swap: 0 (0)
+Mar-29 19:48:06.547 [main] DEBUG nextflow.Session - Work-dir: /bioinformatics/Armadillo_pipeline/work [ext2/ext3]
+Mar-29 19:48:06.548 [main] DEBUG nextflow.Session - Script base path does not exist or is not a directory: /bioinformatics/Armadillo_pipeline/bin
+Mar-29 19:48:06.562 [main] DEBUG nextflow.executor.ExecutorFactory - Extension executors providers=[]
+Mar-29 19:48:06.580 [main] DEBUG nextflow.Session - Observer factory: DefaultObserverFactory
+Mar-29 19:48:06.640 [main] DEBUG nextflow.util.CustomThreadPool - Creating default thread pool > poolSize: 65; maxThreads: 1000
+Mar-29 19:48:06.741 [main] DEBUG nextflow.Session - Session start invoked
+Mar-29 19:48:06.757 [main] DEBUG nextflow.Session - Using default localLib path: /bioinformatics/Armadillo_pipeline/lib
+Mar-29 19:48:06.764 [main] DEBUG nextflow.Session - Adding to the classpath library: /bioinformatics/Armadillo_pipeline/lib
+Mar-29 19:48:09.867 [main] DEBUG nextflow.script.ScriptRunner - > Launching execution
+Mar-29 19:48:09.897 [main] INFO  nextflow.script.BaseScript - Currently using the Grandeur workflow for use with microbial sequencing. The view is great from 8299 feet (2530 meters) above sea level.
+
+Mar-29 19:48:09.898 [main] INFO  nextflow.script.BaseScript - Author: Erin Young
+Mar-29 19:48:09.898 [main] INFO  nextflow.script.BaseScript - email: eriny@utah.gov
+Mar-29 19:48:09.898 [main] INFO  nextflow.script.BaseScript - Version: v1.1.20220425
+Mar-29 19:48:09.899 [main] INFO  nextflow.script.BaseScript - 
+Mar-29 19:48:09.901 [main] INFO  nextflow.script.BaseScript - The files and directory for results is results/AR_240223_M08451B
+Mar-29 19:48:09.905 [main] INFO  nextflow.script.BaseScript - The maximum number of CPUS used in this workflow is 16
+Mar-29 19:48:09.991 [main] DEBUG nextflow.util.CustomThreadPool - Creating default thread pool > poolSize: 65; maxThreads: 1000
+Mar-29 19:48:09.993 [PathVisitor-1] DEBUG nextflow.file.PathVisitor - files for syntax: glob; folder: reads/AR_240223_M08451B/; pattern: *_R{1,2}*.{fastq,fastq.gz,fq,fq.gz}; options: [:]
+Mar-29 19:48:10.018 [PathVisitor-2] DEBUG nextflow.file.PathVisitor - files for syntax: glob; folder: reads/AR_240223_M08451B/; pattern: *_{1,2}*.{fastq,fastq.gz,fq,fq.gz}; options: [syntax:glob, type:file]
+Mar-29 19:48:10.154 [PathVisitor-2] DEBUG nextflow.file.PathVisitor - files for syntax: glob; folder: /bioinformatics/Armadillo_pipeline/fastas/; pattern: *{.fa,.fasta,.fna}; options: [:]
+Mar-29 19:48:10.155 [PathVisitor-2] DEBUG nextflow.file.PathVisitor - No such file: /bioinformatics/Armadillo_pipeline/fastas/ -- Skipping visit
+Mar-29 19:48:10.179 [PathVisitor-2] DEBUG nextflow.file.PathVisitor - files for syntax: glob; folder: /bioinformatics/Armadillo_pipeline/gff/; pattern: *.gff; options: [type:file]
+Mar-29 19:48:10.180 [PathVisitor-2] DEBUG nextflow.file.PathVisitor - No such file: /bioinformatics/Armadillo_pipeline/gff/ -- Skipping visit
+Mar-29 19:48:10.211 [PathVisitor-2] DEBUG nextflow.file.PathVisitor - files for syntax: glob; folder: /bioinformatics/Armadillo_pipeline/configs/; pattern: *tar.gz; options: [type:file]
+Mar-29 19:48:10.211 [PathVisitor-2] DEBUG nextflow.file.PathVisitor - No such file: /bioinformatics/Armadillo_pipeline/configs/ -- Skipping visit
+Mar-29 19:48:10.340 [main] DEBUG nextflow.script.ProcessConfig - Config settings `withName:seqyclean` matches process seqyclean
+Mar-29 19:48:10.345 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
+Mar-29 19:48:10.345 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+Mar-29 19:48:10.355 [main] DEBUG nextflow.executor.Executor - [warm up] executor > local
+Mar-29 19:48:10.366 [main] DEBUG n.processor.LocalPollingMonitor - Creating local task monitor for executor 'local' > cpus=64; memory=499.5 GB; capacity=64; pollInterval=100ms; dumpInterval=5m
+Mar-29 19:48:10.635 [main] DEBUG nextflow.script.ProcessConfig - Config settings `withName:spades` matches process spades
+Mar-29 19:48:10.639 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
+Mar-29 19:48:10.640 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+Mar-29 19:48:10.674 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
+Mar-29 19:48:10.674 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+Mar-29 19:48:10.706 [main] DEBUG nextflow.script.ProcessConfig - Config settings `withName:mash_sketch` matches process mash_sketch
+Mar-29 19:48:10.707 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
+Mar-29 19:48:10.707 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+Mar-29 19:48:10.736 [main] DEBUG nextflow.script.ProcessConfig - Config settings `withName:mash_dist` matches process mash_dist
+Mar-29 19:48:10.737 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
+Mar-29 19:48:10.737 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+Mar-29 19:48:10.788 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
+Mar-29 19:48:10.789 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+Mar-29 19:48:10.812 [Actor Thread 36] DEBUG nextflow.file.SortFileCollector - FileCollector temp dir not removed: null
+Mar-29 19:48:10.822 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
+Mar-29 19:48:10.823 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+Mar-29 19:48:10.841 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
+Mar-29 19:48:10.841 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+Mar-29 19:48:10.904 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
+Mar-29 19:48:10.904 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+Mar-29 19:48:11.047 [main] DEBUG nextflow.script.ProcessConfig - Config settings `withName:seqsero2` matches process seqsero2
+Mar-29 19:48:11.048 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
+Mar-29 19:48:11.049 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+Mar-29 19:48:11.079 [Actor Thread 56] DEBUG nextflow.container.SingularityCache - Singularity found local store for image=docker://staphb/fastqc:latest; path=/singularity/Shigella/staphb-fastqc-latest.img
+Mar-29 19:48:11.079 [Actor Thread 55] DEBUG nextflow.container.SingularityCache - Singularity found local store for image=docker://staphb/seqyclean:1.10.09; path=/singularity/Shigella/staphb-seqyclean-1.10.09.img
+Mar-29 19:48:11.170 [main] DEBUG nextflow.script.ProcessConfig - Config settings `withName:shigatyper` matches process shigatyper
+Mar-29 19:48:11.171 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
+Mar-29 19:48:11.171 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+Mar-29 19:48:11.209 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
+Mar-29 19:48:11.209 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+Mar-29 19:48:11.253 [main] DEBUG nextflow.script.ProcessConfig - Config settings `withName:serotypefinder` matches process serotypefinder
+Mar-29 19:48:11.253 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
+Mar-29 19:48:11.253 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+Mar-29 19:48:11.318 [main] DEBUG nextflow.script.ProcessConfig - Config settings `withName:amrfinderplus` matches process amrfinderplus
+Mar-29 19:48:11.320 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
+Mar-29 19:48:11.320 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+Mar-29 19:48:11.352 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
+Mar-29 19:48:11.353 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+Mar-29 19:48:11.385 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
+Mar-29 19:48:11.385 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+Mar-29 19:48:11.408 [Task submitter] DEBUG nextflow.executor.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+Mar-29 19:48:11.416 [Task submitter] INFO  nextflow.Session - [61/c3b1b7] Submitted process > seqyclean (TXAWG2400302-TX-M08451-240223)
+Mar-29 19:48:11.431 [Task submitter] DEBUG nextflow.executor.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+Mar-29 19:48:11.432 [Task submitter] INFO  nextflow.Session - [91/503489] Submitted process > fastqc (TXAWG2400302-TX-M08451-240223)
+Mar-29 19:48:11.476 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
+Mar-29 19:48:11.477 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+Mar-29 19:48:11.501 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
+Mar-29 19:48:11.502 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+Mar-29 19:48:11.517 [main] DEBUG nextflow.Session - Workflow process names [dsl1]: shigatyper, blobtools, snp_dists, fastani, seqsero2, view, create, seqyclean, multiqc, summary, cg_pipeline, kleborate, sort, blastn, prokka, bwa, mash_sketch, quast, roary, mlst, kraken2, fastqc, serotypefinder, iqtree2, spades, shuffle, mash_dist, amrfinderplus
+Mar-29 19:48:11.523 [main] DEBUG nextflow.script.ScriptRunner - > Await termination 
+Mar-29 19:48:11.523 [main] DEBUG nextflow.Session - Session await
+Mar-29 19:48:47.698 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 2; name: fastqc (TXAWG2400302-TX-M08451-240223); status: COMPLETED; exit: 0; error: -; workDir: /bioinformatics/Armadillo_pipeline/work/91/503489029abf4fdfd8450653e8ae9d]
+Mar-29 19:48:47.744 [Task monitor] DEBUG n.util.BlockingThreadExecutorFactory - Thread pool name=FileTransfer; maxThreads=192; maxQueueSize=576; keepAlive=1m
+Mar-29 19:53:10.546 [Task monitor] DEBUG n.processor.TaskPollingMonitor - !! executor local > tasks to be completed: 1 -- submitted tasks are shown below
+~> TaskHandler[id: 1; name: seqyclean (TXAWG2400302-TX-M08451-240223); status: RUNNING; exit: -; error: -; workDir: /bioinformatics/Armadillo_pipeline/work/61/c3b1b77de011043cfbb8047487d284]
+Mar-29 19:58:10.622 [Task monitor] DEBUG n.processor.TaskPollingMonitor - !! executor local > tasks to be completed: 1 -- submitted tasks are shown below
+~> TaskHandler[id: 1; name: seqyclean (TXAWG2400302-TX-M08451-240223); status: RUNNING; exit: -; error: -; workDir: /bioinformatics/Armadillo_pipeline/work/61/c3b1b77de011043cfbb8047487d284]
+Mar-29 20:00:42.595 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 1; name: seqyclean (TXAWG2400302-TX-M08451-240223); status: COMPLETED; exit: 0; error: -; workDir: /bioinformatics/Armadillo_pipeline/work/61/c3b1b77de011043cfbb8047487d284]
+Mar-29 20:00:42.729 [Actor Thread 65] DEBUG nextflow.container.SingularityCache - Singularity found local store for image=docker://staphb/lyveset:latest; path=/singularity/Shigella/staphb-lyveset-latest.img
+Mar-29 20:00:42.729 [Actor Thread 65] DEBUG nextflow.container.SingularityCache - Singularity found local store for image=docker://staphb/spades:3.15.3; path=/singularity/Shigella/staphb-spades-3.15.3.img
+Mar-29 20:00:42.731 [Actor Thread 67] DEBUG nextflow.sort.BigSort - Sort completed -- entries: 1; slices: 1; internal sort time: 0.003 s; external sort time: 0.038 s; total time: 0.041 s
+Mar-29 20:00:42.750 [Actor Thread 67] DEBUG nextflow.file.FileCollector - Saved collect-files list to: /tmp/aab8d21ce3b8fde1985e29e99e5b711a.collect-file
+Mar-29 20:00:42.752 [Actor Thread 65] DEBUG nextflow.container.SingularityCache - Singularity found local store for image=docker://staphb/mash:2.3; path=/singularity/Shigella/staphb-mash-2.3.img
+Mar-29 20:00:42.771 [Task submitter] DEBUG nextflow.executor.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+Mar-29 20:00:42.773 [Task submitter] INFO  nextflow.Session - [b7/6a7714] Submitted process > shuffle (TXAWG2400302-TX-M08451-240223)
+Mar-29 20:00:42.795 [Task submitter] DEBUG nextflow.executor.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+Mar-29 20:00:42.796 [Task submitter] INFO  nextflow.Session - [aa/c0879c] Submitted process > spades (TXAWG2400302-TX-M08451-240223)
+Mar-29 20:00:42.798 [Actor Thread 64] DEBUG nextflow.container.SingularityCache - Singularity found local store for image=docker://staphb/kraken2:latest; path=/singularity/Shigella/staphb-kraken2-latest.img
+Mar-29 20:00:42.805 [Actor Thread 67] DEBUG nextflow.file.FileCollector - Deleting file collector temp dir: /tmp/nxf-859976263668851093
+Mar-29 20:00:42.810 [Task submitter] DEBUG nextflow.executor.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+Mar-29 20:00:42.811 [Task submitter] INFO  nextflow.Session - [fa/cf1dfb] Submitted process > mash_sketch (TXAWG2400302-TX-M08451-240223)
+Mar-29 20:00:42.857 [Task submitter] DEBUG nextflow.executor.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+Mar-29 20:00:42.857 [Task submitter] INFO  nextflow.Session - [81/394884] Submitted process > kraken2 (TXAWG2400302-TX-M08451-240223)
+Mar-29 20:00:56.529 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 6; name: kraken2 (TXAWG2400302-TX-M08451-240223); status: COMPLETED; exit: 0; error: -; workDir: /bioinformatics/Armadillo_pipeline/work/81/3948842a257d9dcecabb2ff325f5bb]
+Mar-29 20:01:06.226 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 3; name: mash_sketch (TXAWG2400302-TX-M08451-240223); status: COMPLETED; exit: 0; error: -; workDir: /bioinformatics/Armadillo_pipeline/work/fa/cf1dfb2fb71df3dad53bcdc24bd4c6]
+Mar-29 20:01:06.364 [Task submitter] DEBUG nextflow.executor.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+Mar-29 20:01:06.365 [Task submitter] INFO  nextflow.Session - [86/e4b461] Submitted process > mash_dist (TXAWG2400302-TX-M08451-240223)
+Mar-29 20:01:12.767 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 7; name: mash_dist (TXAWG2400302-TX-M08451-240223); status: COMPLETED; exit: 0; error: -; workDir: /bioinformatics/Armadillo_pipeline/work/86/e4b461e4a8415fd259034e8d023d65]
+Mar-29 20:01:12.799 [Actor Thread 70] DEBUG nextflow.file.SortFileCollector - FileCollector temp dir not removed: null
+Mar-29 20:02:31.834 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 5; name: shuffle (TXAWG2400302-TX-M08451-240223); status: COMPLETED; exit: 0; error: -; workDir: /bioinformatics/Armadillo_pipeline/work/b7/6a771415cd8b212163c4de73203ab6]
+Mar-29 20:02:31.952 [Actor Thread 66] DEBUG nextflow.util.CacheHelper - Unable to get file attributes file: /bioinformatics/Armadillo_pipeline/configs/genome_sizes.json -- Cause: java.nio.file.NoSuchFileException: /bioinformatics/Armadillo_pipeline/configs/genome_sizes.json
+Mar-29 20:02:31.968 [Task submitter] DEBUG nextflow.executor.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+Mar-29 20:02:31.968 [Task submitter] INFO  nextflow.Session - [e4/2b56ce] Submitted process > cg_pipeline (TXAWG2400302-TX-M08451-240223)
+Mar-29 20:02:39.657 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 10; name: cg_pipeline (TXAWG2400302-TX-M08451-240223); status: COMPLETED; exit: 0; error: -; workDir: /bioinformatics/Armadillo_pipeline/work/e4/2b56ce25f804f3803628bcd68d12bb]
+Mar-29 20:02:39.696 [Actor Thread 70] DEBUG nextflow.sort.BigSort - Sort completed -- entries: 1; slices: 1; internal sort time: 0.001 s; external sort time: 0.0 s; total time: 0.001 s
+Mar-29 20:02:39.701 [Actor Thread 70] DEBUG nextflow.file.FileCollector - Saved collect-files list to: /tmp/8ebe2611b9d75c21c4368b9bfae22c23.collect-file
+Mar-29 20:02:39.703 [Actor Thread 70] DEBUG nextflow.file.FileCollector - Deleting file collector temp dir: /tmp/nxf-16154349376225417712
+Mar-29 20:03:10.701 [Task monitor] DEBUG n.processor.TaskPollingMonitor - !! executor local > tasks to be completed: 1 -- submitted tasks are shown below
+~> TaskHandler[id: 4; name: spades (TXAWG2400302-TX-M08451-240223); status: RUNNING; exit: -; error: -; workDir: /bioinformatics/Armadillo_pipeline/work/aa/c0879ca9403175d8e01d18b120c792]
+Mar-29 20:07:13.979 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 4; name: spades (TXAWG2400302-TX-M08451-240223); status: COMPLETED; exit: 0; error: -; workDir: /bioinformatics/Armadillo_pipeline/work/aa/c0879ca9403175d8e01d18b120c792]
+Mar-29 20:07:14.020 [Actor Thread 67] DEBUG nextflow.file.SortFileCollector - FileCollector temp dir not removed: null
+Mar-29 20:07:14.101 [Actor Thread 67] DEBUG nextflow.container.SingularityCache - Singularity found local store for image=docker://staphb/ncbi-amrfinderplus:3.10.16; path=/singularity/Shigella/staphb-ncbi-amrfinderplus-3.10.16.img
+Mar-29 20:07:14.104 [Actor Thread 67] DEBUG nextflow.container.SingularityCache - Singularity found local store for image=docker://staphb/mlst:latest; path=/singularity/Shigella/staphb-mlst-latest.img
+Mar-29 20:07:14.106 [Actor Thread 67] DEBUG nextflow.container.SingularityCache - Singularity found local store for image=docker://staphb/quast:latest; path=/singularity/Shigella/staphb-quast-latest.img
+Mar-29 20:07:14.136 [Task submitter] DEBUG nextflow.executor.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+Mar-29 20:07:14.137 [Task submitter] INFO  nextflow.Session - [15/1c177a] Submitted process > amrfinderplus (TXAWG2400302-TX-M08451-240223)
+Mar-29 20:07:14.146 [Task submitter] DEBUG nextflow.executor.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+Mar-29 20:07:14.147 [Task submitter] INFO  nextflow.Session - [40/fd10c2] Submitted process > mlst (TXAWG2400302-TX-M08451-240223)
+Mar-29 20:07:14.162 [Task submitter] DEBUG nextflow.executor.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+Mar-29 20:07:14.163 [Task submitter] INFO  nextflow.Session - [3f/7c8494] Submitted process > quast (TXAWG2400302-TX-M08451-240223)
+Mar-29 20:07:18.420 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 12; name: mlst (TXAWG2400302-TX-M08451-240223); status: COMPLETED; exit: 0; error: -; workDir: /bioinformatics/Armadillo_pipeline/work/40/fd10c288631090e57e5a8b64559cc2]
+Mar-29 20:07:18.459 [Actor Thread 27] DEBUG nextflow.sort.BigSort - Sort completed -- entries: 1; slices: 1; internal sort time: 0.0 s; external sort time: 0.001 s; total time: 0.001 s
+Mar-29 20:07:18.463 [Actor Thread 27] DEBUG nextflow.file.FileCollector - Saved collect-files list to: /tmp/98198a8efce000dad7fab5e22d44201a.collect-file
+Mar-29 20:07:18.465 [Actor Thread 27] DEBUG nextflow.file.FileCollector - Deleting file collector temp dir: /tmp/nxf-524636414929876884
+Mar-29 20:07:18.860 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 11; name: quast (TXAWG2400302-TX-M08451-240223); status: COMPLETED; exit: 0; error: -; workDir: /bioinformatics/Armadillo_pipeline/work/3f/7c8494eaa9e188d4c90b7fa23f0ba1]
+Mar-29 20:07:18.900 [Actor Thread 66] DEBUG nextflow.sort.BigSort - Sort completed -- entries: 1; slices: 1; internal sort time: 0.0 s; external sort time: 0.0 s; total time: 0.0 s
+Mar-29 20:07:18.903 [Actor Thread 67] DEBUG nextflow.container.SingularityCache - Singularity found local store for image=docker://ewels/multiqc:latest; path=/singularity/Shigella/ewels-multiqc-latest.img
+Mar-29 20:07:18.905 [Actor Thread 66] DEBUG nextflow.file.FileCollector - Saved collect-files list to: /tmp/10139ae0f37451d3a134d23bb86a37e7.collect-file
+Mar-29 20:07:18.907 [Actor Thread 66] DEBUG nextflow.file.FileCollector - Deleting file collector temp dir: /tmp/nxf-6597071309796585222
+Mar-29 20:07:18.934 [Task submitter] DEBUG nextflow.executor.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+Mar-29 20:07:18.934 [Task submitter] INFO  nextflow.Session - [ab/31aee8] Submitted process > multiqc (multiqc)
+Mar-29 20:07:25.673 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 16; name: multiqc (multiqc); status: COMPLETED; exit: 0; error: -; workDir: /bioinformatics/Armadillo_pipeline/work/ab/31aee8f1896ea38fa5afd40078fde0]
+Mar-29 20:08:10.716 [Task monitor] DEBUG n.processor.TaskPollingMonitor - !! executor local > tasks to be completed: 1 -- submitted tasks are shown below
+~> TaskHandler[id: 15; name: amrfinderplus (TXAWG2400302-TX-M08451-240223); status: RUNNING; exit: -; error: -; workDir: /bioinformatics/Armadillo_pipeline/work/15/1c177a107c5f664d984a720801b8d3]
+Mar-29 20:09:20.328 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 15; name: amrfinderplus (TXAWG2400302-TX-M08451-240223); status: COMPLETED; exit: 1; error: -; workDir: /bioinformatics/Armadillo_pipeline/work/15/1c177a107c5f664d984a720801b8d3]
+Mar-29 20:09:20.338 [Task monitor] INFO  nextflow.processor.TaskProcessor - [15/1c177a] NOTE: Process `amrfinderplus (TXAWG2400302-TX-M08451-240223)` terminated with an error exit status (1) -- Error is ignored
+Mar-29 20:09:20.342 [Actor Thread 25] DEBUG nextflow.file.SortFileCollector - FileCollector temp dir not removed: null
+Mar-29 20:09:20.430 [Actor Thread 27] DEBUG nextflow.container.SingularityCache - Singularity found local store for image=docker://staphb/parallel-perl:latest; path=/singularity/Shigella/staphb-parallel-perl-latest.img
+Mar-29 20:09:20.527 [Task submitter] DEBUG nextflow.executor.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+Mar-29 20:09:20.528 [Task submitter] INFO  nextflow.Session - [19/14caa9] Submitted process > summary (TXAWG2400302-TX-M08451-240223)
+Mar-29 20:09:20.861 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 17; name: summary (TXAWG2400302-TX-M08451-240223); status: COMPLETED; exit: 0; error: -; workDir: /bioinformatics/Armadillo_pipeline/work/19/14caa9fb392f7383cdf74b9b62643c]
+Mar-29 20:09:20.869 [main] DEBUG nextflow.Session - Session await > all process finished
+Mar-29 20:09:20.871 [main] DEBUG nextflow.Session - Session await > all barriers passed
+Mar-29 20:09:20.897 [Actor Thread 66] DEBUG nextflow.sort.BigSort - Sort completed -- entries: 1; slices: 1; internal sort time: 0.0 s; external sort time: 0.001 s; total time: 0.001 s
+Mar-29 20:09:20.901 [Actor Thread 25] DEBUG nextflow.sort.BigSort - Sort completed -- entries: 1; slices: 1; internal sort time: 0.0 s; external sort time: 0.001 s; total time: 0.001 s
+Mar-29 20:09:20.902 [Actor Thread 66] DEBUG nextflow.file.FileCollector - Saved collect-files list to: /tmp/ee0c91d158c7095587ed190e915014f4.collect-file
+Mar-29 20:09:20.905 [Actor Thread 66] DEBUG nextflow.file.FileCollector - Deleting file collector temp dir: /tmp/nxf-8115382603088680538
+Mar-29 20:09:20.906 [Actor Thread 25] DEBUG nextflow.file.FileCollector - Saved collect-files list to: /tmp/713d9a5f7c8543bfb8d76ed6e58b8676.collect-file
+Mar-29 20:09:20.908 [Actor Thread 25] DEBUG nextflow.file.FileCollector - Deleting file collector temp dir: /tmp/nxf-4248814497552336802
+Mar-29 20:09:20.912 [main] INFO  nextflow.script.BaseScript - Pipeline completed at: 2024-03-29T20:09:20.910082Z
+Mar-29 20:09:20.912 [main] INFO  nextflow.script.BaseScript - MultiQC report can be found at results/AR_240223_M08451B/multiqc/multiqc_report.html
+Mar-29 20:09:20.912 [main] INFO  nextflow.script.BaseScript - Summary can be found at results/AR_240223_M08451B/grandeur_results.tsv
+Mar-29 20:09:20.912 [main] INFO  nextflow.script.BaseScript - Execution status: OK
+Mar-29 20:09:20.920 [main] DEBUG nextflow.trace.WorkflowStatsObserver - Workflow completed > WorkflowStats[succeededCount=12; failedCount=1; ignoredCount=1; cachedCount=0; pendingCount=0; submittedCount=0; runningCount=0; retriesCount=0; abortedCount=0; succeedDuration=2h 4m 27s; failedDuration=8m 25s; cachedDuration=0ms;loadCpus=0; loadMemory=0; peakRunning=4; peakCpus=34; peakMemory=0; ]
+Mar-29 20:09:21.021 [main] DEBUG nextflow.CacheDB - Closing CacheDB done
+Mar-29 20:09:21.055 [main] DEBUG nextflow.script.ScriptRunner - > Execution complete -- Goodbye
