@@ -1,8 +1,19 @@
 #!/usr/bin/env python3
-# Armadillo pipeline 
-# Usage: python3 armadillo.py -r run_name
+# Armadillo: A pipeline for NGS data analysis and SRA submission
+# Version: 2.0
+# Date: 04/01/2024
+# Description: Armadillo is a pipeline for NGS data analysis and SRA submission. It takes the Phoenix summary file as input and generates a report for each passed sample. It also generates SRA submission files for passed samples.
+# Dependencies: Python3, pandas, numpy, sqlite3, datetime, pdfkit, prettytable, base64, os, logging, subprocess, glob
+# Input: Phoenix summary file: Phoenix_Summary.tsv
+# Output: A report for each passed sample, SRA submission files, qc_results.tsv, qc_results.xlsx
+# Parameters: -i: Phoenix summary file, -r: run name, -d: installation dir, -a: AWS bucket name
+# Example: python3 armadillo.py -i Phoenix_Summary.tsv -r run_name -d installation_dir -a AWS_bucket_name
+# Usage: python3 armadillo.py -i Phoenix_Summary.tsv -r run_name -d installation_dir -a AWS_bucket_name
+# Make sure to download the version of the database that matches with Pheonix version: 
+# https://ftp.ncbi.nlm.nih.gov/pathogen/Antimicrobial_resistance/AMRFinderPlus/database/
+# All rights reserved.
 # Author: Jie.Lu@dshs.texas.gov
-version = "2.0-03/29/2024"
+version = "2.0-01/01/2024"
 
 import sys
 import argparse
@@ -32,11 +43,16 @@ phoenixSummaryFile = args.i
 run_name = args.r
 basedir = args.d
 aws_bucket = args.a
-print(phoenixSummaryFile)
 
 logging.basicConfig(filename = 'armadillo.log', filemode = 'a', level = logging.DEBUG)
 logging.info('Armadillo {} starting on run {}'.format(version, run_name))
 logging.info(str(date.today()))
+
+# loggin the command line arguments given
+logging.info('Phoenix summary file: {}'.format(phoenixSummaryFile))
+logging.info('Run name: {}'.format(run_name))
+logging.info('Installation dir: {}'.format(basedir))
+logging.info('AWS bucket name: {}'.format(aws_bucket))
 
 #####################################################################
 # Read Phoenix_summary.tsv and extract Hai-seq ID from sample name
@@ -96,11 +112,13 @@ results.sort_values(by="HAIseq_ID", ascending=True, inplace=True)
 #####################################################################
 # Generate SRA submission files
 #####################################################################
+# logging the number of samples passed
+logging.info('Number of samples passed: {}'.format(len(results[results["Auto_QC_Outcome"] == "PASS"])))
 
 results_to_sra = results[results["Auto_QC_Outcome"] == "PASS"]
 results_to_sra = results_to_sra[results_to_sra["ID"].str.contains('CON') == False] 
 results_metadata = prep_SRA_submission(results_to_sra, run_name, basedir)
-#print(results_metadata)
+
 
 #####################################################################
 # create pdf reports for each passed sample    
@@ -123,8 +141,6 @@ footnote = ("\n").join(footnote)
 reads_dir = basedir + "/reads/{}/".format(run_name)
 subprocess.run(["mkdir", "-p", "SRA_seq"])
 
-# Make sure to download the version of the database that matches with Pheonix version: 
-# https://ftp.ncbi.nlm.nih.gov/pathogen/Antimicrobial_resistance/AMRFinderPlus/database/
 
 refseq = pd.read_csv(basedir + "/ReferenceGeneCatalog_3.11_20230417.txt", sep="\t", header=0, index_col=None)
 refseq['allele'] = refseq['allele'].fillna(refseq['gene_family'])
