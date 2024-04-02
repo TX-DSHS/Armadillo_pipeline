@@ -17,11 +17,16 @@ if [ $# -eq 0 ]; then
   exit 1
 fi
 
-version="2.0-04/01/2024"
+version="2.1-04/02/2024"
 # Read the aws bucket name from file aws_bucket.txt
 aws_bucket=$(cat aws_bucket.txt)
 #aws_bucket="s3://804609861260-bioinformatics-infectious-disease"
 basedir=$PWD
+refGenCatlog="/ReferenceGeneCatalog_3.12_20240205.txt"
+phoenix_version="v2.1.1"
+
+mkdir -p $basedir/results
+mkdir -p $basedir/reads
 
 rm -rf $basedir/results/$1
 mkdir -p $basedir/results/$1
@@ -65,8 +70,9 @@ $basedir/phoenix/bin/create_samplesheet.sh $reads_path > $reads_path/samplesheet
 source $basedir/miniconda3/etc/profile.d/conda.sh
 conda activate nextflow
 cd $out_path
-export NXF_SINGULARITY_CACHEDIR=/singularity/Phoenix
-nextflow run cdcgov/phoenix -r v2.0.2 -profile singularity -entry PHOENIX --input $reads_path/samplesheet.csv --kraken2db $basedir/k2_standard_08gb_20230605 --output $out_path
+mkdir -p $basedir/singularity/Phoenix
+export NXF_SINGULARITY_CACHEDIR=$basedir/singularity/Phoenix
+nextflow run cdcgov/phoenix -r $phoenix_version -profile singularity -entry PHOENIX --input $reads_path/samplesheet.csv --kraken2db $basedir/k2_standard_08gb_20230605 --output $out_path
 conda deactivate
 # if nextflow failed, exit
 if [ $? -ne 0 ]; then
@@ -78,7 +84,7 @@ rm -r $out_path/work
 rm $basedir/results/zip/$1.zip
 
 # Run Armadillo pipeline
-python3 $basedir/armadillo_phoenix.py -r $1 -d $basedir -a $aws_bucket >> $basedir/results/$1/armadillo.log
+python3 $basedir/armadillo_phoenix.py -r $1 -d $basedir -a $aws_bucket -c $refGenCatlog >> $basedir/results/$1/armadillo.log
 
 # if armadillo failed, exit
 if [ $? -ne 0 ]; then
@@ -87,14 +93,13 @@ if [ $? -ne 0 ]; then
 fi
 
 # Zip and copy the results to s3
-# rm -f $basedir/results/zip/$1_result.zip
-# rm -f $basedir/results/zip/$1_report.zip
-#zip -rj $basedir/results/zip/$1_report $basedir/results/$1/*.tsv $basedir/results/$1/*.pdf $basedir/results/$1/*.xlsx $basedir/results/$1/*.log $basedir/results/$1/results/multiqc/multiqc_report.html $basedir/results/$1/results/Phoenix_Summary.tsv
-#zip -rj $basedir/results/zip/$1_report $basedir/results/$1/*.log $basedir/results/$1/results/multiqc/multiqc_report.html $basedir/results/$1/results/Phoenix_Summary.tsv
+rm -f $basedir/results/zip/$1_result.zip
+rm -f $basedir/results/zip/$1_report.zip
+zip -rj $basedir/results/zip/$1_report $basedir/results/$1/*.tsv $basedir/results/$1/*.pdf $basedir/results/$1/*.xlsx $basedir/results/$1/*.log $basedir/results/$1/phx_output/multiqc/multiqc_report.html $basedir/results/$1/phx_output/*.tsv $basedir/results/$1/phx_output/*.xlsx
+aws s3 cp $basedir/results/zip/$1_report.zip $aws_bucket/ARLN/REPORT/$1_report.zip --region us-gov-west-1
 
-#aws s3 cp $basedir/results/zip/$1_report.zip $aws_bucket/ARLN/REPORT/$1_report.zip --region us-gov-west-1
-#zip -r $basedir/results/zip/$1_result $basedir/results/$1
-#aws s3 cp $basedir/results/zip/$1_result.zip $aws_bucket/ARLN/ANALYSIS_RESULTS/$1_result.zip --region us-gov-west-1
+zip -r $basedir/results/zip/$1_result $basedir/results/$1
+aws s3 cp $basedir/results/zip/$1_result.zip $aws_bucket/ARLN/ANALYSIS_RESULTS/$1_result.zip --region us-gov-west-1
 
 rm $basedir/results/zip/$1_*.zip 
 rm $basedir/reads/zip/$1.zip 

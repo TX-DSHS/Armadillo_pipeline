@@ -33,17 +33,17 @@ from lib.prep_SRA_submission_phoenix import prep_SRA_submission
 from lib.presence_gene_family import check_gene_family
 
 my_parser = argparse.ArgumentParser()
-my_parser.add_argument("-i", help = 'Phoenix summary file: Phoenix_Summary.tsv', default = "results/Phoenix_Summary.tsv")
+my_parser.add_argument("-i", help = 'Phoenix summary file: Phoenix_Summary.tsv', default = "phx_output/Phoenix_Summary.tsv")
 my_parser.add_argument("-r", help = 'Run name')
 my_parser.add_argument("-d", help = 'installation dir')
 my_parser.add_argument("-a", help = 'AWS bucket name')
-
+my_parser.add_argument("-c", help = 'Reference Gene Catlog for ARMFinder')
 args = my_parser.parse_args()
 phoenixSummaryFile = args.i
 run_name = args.r
 basedir = args.d
 aws_bucket = args.a
-
+refGenCatlog = args.c
 logging.basicConfig(filename = 'armadillo.log', filemode = 'a', level = logging.DEBUG)
 logging.info('Armadillo {} starting on run {}'.format(version, run_name))
 logging.info(str(date.today()))
@@ -142,7 +142,7 @@ reads_dir = basedir + "/reads/{}/".format(run_name)
 subprocess.run(["mkdir", "-p", "SRA_seq"])
 
 
-refseq = pd.read_csv(basedir + "/ReferenceGeneCatalog_3.11_20230417.txt", sep="\t", header=0, index_col=None)
+refseq = pd.read_csv(basedir + refGenCatlog, sep="\t", header=0, index_col=None)
 refseq['allele'] = refseq['allele'].fillna(refseq['gene_family'])
 
 for s, id, name, mlst, specimen_id, beta_lactam, other_AR in zip(passSamples, passSample_Ids, passSample_name, passSample_mlst, passSample_specimen_id, passSample_beta_lactam, passSample_other_AR):
@@ -235,10 +235,10 @@ for s, id, name, mlst, specimen_id, beta_lactam, other_AR in zip(passSamples, pa
            system("aws s3 cp {} {}/ARLN/FASTQ/{} --region us-gov-west-1".format(fastq, aws_bucket, path.basename(fastq))) 
 
     #copy contigs fastas to cluster folder on S3
-    print(specimen_id)
+    #print(specimen_id)
     genus = name.split(" ")[0]
     species = name.split(" ")[1]
-    contig_fasta = "results/" + s + "/assembly/"+ s + ".contigs.fa.gz"
+    contig_fasta = "phx_output/" + s + "/assembly/"+ s + ".contigs.fa.gz"
     fasta_path = basedir + "/cluster/" + genus + "_" + species
     fasta_name = s + "_" + specimen_id + "_contigs.fa.gz"
     #print(contig_fasta, fasta_name)
