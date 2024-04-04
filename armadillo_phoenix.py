@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
 # Armadillo: A pipeline for NGS data analysis and SRA submission
-# Version: 2.0
-# Date: 04/01/2024
 # Description: Armadillo is a pipeline for NGS data analysis and SRA submission. It takes the Phoenix summary file as input and generates a report for each passed sample. It also generates SRA submission files for passed samples.
 # Dependencies: Python3, pandas, numpy, sqlite3, datetime, pdfkit, prettytable, base64, os, logging, subprocess, glob
 # Input: Phoenix summary file: Phoenix_Summary.tsv
@@ -13,7 +11,7 @@
 # https://ftp.ncbi.nlm.nih.gov/pathogen/Antimicrobial_resistance/AMRFinderPlus/database/
 # All rights reserved.
 # Author: Jie.Lu@dshs.texas.gov
-version = "2.0-01/01/2024"
+version = "2.1-04/04/2024"
 
 import sys
 import argparse
@@ -58,7 +56,8 @@ logging.info('AWS bucket name: {}'.format(aws_bucket))
 # Read Phoenix_summary.tsv and extract Hai-seq ID from sample name
 #######################################################################
 results = pd.read_csv(phoenixSummaryFile, sep="\t", header=0, index_col=None)
-results["HAIseq_ID"] = results["ID"].str[:12]
+#results["HAIseq_ID"] = results["ID"].str[:12]
+results["WGS_id"] = results["ID"].str[:12]
 results["run_name"] = run_name
 
 # Replace missing values with "Not detected" for the AR gene columns
@@ -70,12 +69,14 @@ results['GAMMA_Other_AR_Genes'] = results['GAMMA_Other_AR_Genes'].fillna("Not de
 ###################################################################
 checklist = {}
 carb_genes = ["blaKPC", "blaNDM", "blaOXA-48", "blaVIM", "blaIMP", "blaOXA-23", "blaOXA-24/40", "blaOXA-58"]
-oxa_family = {}
-with open(basedir + "/oxa_family.tsv", "r") as f:
-    for line in f:
-        line = line.rstrip()
-        family, oxa_gene = line.split("\t")
-        oxa_family[oxa_gene] = family
+
+# Obsolete
+# oxa_family = {}
+# with open(basedir + "/oxa_family.tsv", "r") as f:
+#     for line in f:
+#         line = line.rstrip()
+#         family, oxa_gene = line.split("\t")
+#         oxa_family[oxa_gene] = family
 
 carb_gene_labels = {}
 for carb_gene in carb_genes:
@@ -90,9 +91,9 @@ for gene_list in results["GAMMA_Beta_Lactam_Resistance_Genes"]:
     gene_list = [ i.split("_")[0] for i in gene_list]
 
     for gene in gene_list:
-        if gene in oxa_family:
-            checklist[oxa_family[gene]] = "DETECTED"
-        elif gene.startswith("blaKPC"):
+        # if gene in oxa_family:
+        #     checklist[oxa_family[gene]] = "DETECTED"
+        if gene.startswith("blaKPC"):
             checklist["blaKPC"] = "DETECTED"
         elif gene.startswith("blaNDM"):
             checklist["blaNDM"] = "DETECTED"
@@ -107,7 +108,7 @@ for gene_list in results["GAMMA_Beta_Lactam_Resistance_Genes"]:
 for gene in carb_gene_labels:
     results[gene] = carb_gene_labels[gene]
 
-results.sort_values(by="HAIseq_ID", ascending=True, inplace=True)
+results.sort_values(by="WGS_id", ascending=True, inplace=True)
 
 #####################################################################
 # Generate SRA submission files
@@ -124,10 +125,10 @@ results_metadata = prep_SRA_submission(results_to_sra, run_name, basedir)
 # create pdf reports for each passed sample    
 #####################################################################
 passSamples = list(results_metadata[results_metadata["Auto_QC_Outcome"] == "PASS"]["ID"])
-passSample_Ids = list(results_metadata[results_metadata["Auto_QC_Outcome"] == "PASS"]["HAIseq_ID"])
+passSample_Ids = list(results_metadata[results_metadata["Auto_QC_Outcome"] == "PASS"]["WGS_id"])
 passSample_name = list(results_metadata[results_metadata["Auto_QC_Outcome"] == "PASS"]["Species"])
 passSample_mlst = list(results_metadata[results_metadata["Auto_QC_Outcome"] == "PASS"]["MLST_1"])
-passSample_specimen_id = list(results_metadata[results_metadata["Auto_QC_Outcome"] == "PASS"]["KEY"])
+passSample_specimen_id = list(results_metadata[results_metadata["Auto_QC_Outcome"] == "PASS"]["DSHS_id"])
 passSample_beta_lactam = list(results_metadata[results_metadata["Auto_QC_Outcome"] == "PASS"]["GAMMA_Beta_Lactam_Resistance_Genes"])
 passSample_other_AR = list(results_metadata[results_metadata["Auto_QC_Outcome"] == "PASS"]["GAMMA_Other_AR_Genes"])
 
@@ -180,7 +181,7 @@ for s, id, name, mlst, specimen_id, beta_lactam, other_AR in zip(passSamples, pa
     try:
         oxa_families = check_gene_family(all_amr_genes["product_name"])
         for family in oxa_families:
-            results.loc[results["HAIseq_ID"] == id, family] = oxa_families[family]
+            results.loc[results["WGS_id"] == id, family] = oxa_families[family]
     except:
         pass
 
@@ -253,48 +254,42 @@ for s, id, name, mlst, specimen_id, beta_lactam, other_AR in zip(passSamples, pa
 # write results to qc_results.xlsx
 #####################################
 # Header of Phoenxi_summary.tsv
-# HAIseq_ID	Auto_QC_Outcome	Warning_Count	Estimated_Coverage	Genome_Length	Assembly_Ratio_(STDev)	#_of_Scaffolds_>500bp	GC_%	
+# ID	Auto_QC_Outcome	Warning_Count	Estimated_Coverage	Genome_Length	Assembly_Ratio_(STDev)	#_of_Scaffolds_>500bp	GC_%	
 # Species	Taxa_Confidence	Taxa_Coverage	Taxa_Source	Kraken2_Trimd	Kraken2_Weighted	MLST_Scheme_1	MLST_1	MLST_Scheme_2	
 # MLST_2	GAMMA_Beta_Lactam_Resistance_Genes	GAMMA_Other_AR_Genes	AMRFinder_Point_Mutations	Hypervirulence_Genes	
 # Plasmid_Incompatibility_Replicons	Auto_QC_Failure_Reason
 
-column = ["HAIseq_ID", "run_name", "Species", "Auto_QC_Outcome", "Auto_QC_Failure_Reason", 
-          "Estimated_Coverage", "Genome_Length", "Assembly_Ratio_(STDev)", "#_of_Scaffolds_>500bp", "GC_%", 
+# If no demo file is provided, no "DSHS_id" column will be involed.
+column = ["run_name", "WGS_id", "Species", 
           "blaKPC", "blaNDM", "blaOXA-48", "blaVIM", "blaIMP", "blaOXA-23", "blaOXA-24/40", "blaOXA-58", 
-          "Hypervirulence_Genes", "MLST_1","MLST_2","GAMMA_Beta_Lactam_Resistance_Genes", "GAMMA_Other_AR_Genes",
+          "Hypervirulence_Genes", "MLST_1", "MLST_2", "Auto_QC_Outcome", "Auto_QC_Failure_Reason", 
+          "Estimated_Coverage", "Genome_Length", "Assembly_Ratio_(STDev)", "#_of_Scaffolds_>500bp", "GC_%", 
+          "GAMMA_Beta_Lactam_Resistance_Genes", "GAMMA_Other_AR_Genes",
           "Taxa_Confidence", "Taxa_Coverage", "Taxa_Source", "Kraken2_Trimd", "Kraken2_Weighted"
          ]
 
 # Write to qc_results
 if glob(basedir + "/reads/{}/*.xlsx".format(run_name)):
-    try:   # if demo file is included and has the right format, include "KEY" in the qc_results
+    try:   # if demo file is included and has the right format, include "DSHS_ID" in the qc_results
         demofile = glob(basedir + "/reads/{}/*.xlsx".format(run_name))[0]
         demo = pd.read_excel(demofile, engine='openpyxl')
-        results = pd.merge(results, demo, left_on = "HAIseq_ID", right_on = "HAI_WGS_ID(YYYYCB-#####)", how = "left")
-        results.fillna('missing', inplace=True)
-        results.sort_values(by="HAIseq_ID", ascending=True, inplace=True)
-        column = ["HAIseq_ID", "run_name", "KEY","Species", "Auto_QC_Outcome", "Auto_QC_Failure_Reason", 
-          "Estimated_Coverage", "Genome_Length", "Assembly_Ratio_(STDev)", "#_of_Scaffolds_>500bp", "GC_%", 
+        results = pd.merge(results, demo, left_on = "WGS_id", right_on = "HAI_WGS_ID(YYYYCB-#####)", how = "left")
+        results["DSHS_id"] = results["KEY"]
+        column = ["run_name", "WGS_id", "Species", "DSHS_id",
           "blaKPC", "blaNDM", "blaOXA-48", "blaVIM", "blaIMP", "blaOXA-23", "blaOXA-24/40", "blaOXA-58", 
-          "Hypervirulence_Genes", "MLST_1","MLST_2","GAMMA_Beta_Lactam_Resistance_Genes", "GAMMA_Other_AR_Genes",
+          "Hypervirulence_Genes", "MLST_1", "MLST_2", "Auto_QC_Outcome", "Auto_QC_Failure_Reason", 
+          "Estimated_Coverage", "Genome_Length", "Assembly_Ratio_(STDev)", "#_of_Scaffolds_>500bp", "GC_%", 
+          "GAMMA_Beta_Lactam_Resistance_Genes", "GAMMA_Other_AR_Genes",
           "Taxa_Confidence", "Taxa_Coverage", "Taxa_Source", "Kraken2_Trimd", "Kraken2_Weighted"
          ]
-    except:
-        column = ["HAIseq_ID", "run_name", "Species", "Auto_QC_Outcome", "Auto_QC_Failure_Reason", 
-          "Estimated_Coverage", "Genome_Length", "Assembly_Ratio_(STDev)", "#_of_Scaffolds_>500bp", "GC_%", 
-          "blaKPC", "blaNDM", "blaOXA-48", "blaVIM", "blaIMP", "blaOXA-23", "blaOXA-24/40", "blaOXA-58", 
-          "Hypervirulence_Genes", "MLST_1","MLST_2","GAMMA_Beta_Lactam_Resistance_Genes", "GAMMA_Other_AR_Genes",
-          "Taxa_Confidence", "Taxa_Coverage", "Taxa_Source", "Kraken2_Trimd", "Kraken2_Weighted"
-         ]
-        
-else:  # if demo file does not exist, include "KEY" in the qc_results
-    column = ["HAIseq_ID", "run_name", "Species", "Auto_QC_Outcome", "Auto_QC_Failure_Reason", 
-          "Estimated_Coverage", "Genome_Length", "Assembly_Ratio_(STDev)", "#_of_Scaffolds_>500bp", "GC_%", 
-          "blaKPC", "blaNDM", "blaOXA-48", "blaVIM", "blaIMP", "blaOXA-23", "blaOXA-24/40", "blaOXA-58", 
-          "Hypervirulence_Genes", "MLST_1","MLST_2","GAMMA_Beta_Lactam_Resistance_Genes", "GAMMA_Other_AR_Genes",
-          "Taxa_Confidence", "Taxa_Coverage", "Taxa_Source", "Kraken2_Trimd", "Kraken2_Weighted"
-         ]
+ 
+    except: # if demo file format is incorrect, do not include "DSHS_ID" in qc_results.tsv 
+        logging.info("Demo file was found but might not be in the correct format. Please double check.")
+        pass
 
+
+results.fillna('missing', inplace=True)
+results.sort_values(by="WGS_id", ascending=True, inplace=True)
 results.to_csv("qc_results.tsv", sep = "\t", columns = column, index = False)
 results.to_excel("qc_results.xlsx", header = True, columns = column, index = False)
 logging.info('Armadillo finished')

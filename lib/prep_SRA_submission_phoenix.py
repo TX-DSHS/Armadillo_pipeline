@@ -14,33 +14,34 @@ def prep_SRA_submission(results, run_name, basedir):
     # Check if demo file exists
 
     if glob(basedir + "/reads/{}/*.xlsx".format(run_name)):
+        # if demo file exists
         try:
             demofile = glob(basedir + "/reads/{}/*.xlsx".format(run_name))[0]
             demo = pd.read_excel(demofile, engine='openpyxl')
-            results = pd.merge(results, demo, left_on = "HAIseq_ID", right_on = "HAI_WGS_ID(YYYYCB-#####)", how = "left")
-            results["KEY"].fillna('missing', inplace=True)
-            
+            results = pd.merge(results, demo, left_on = "KEY", right_on = "HAI_WGS_ID(YYYYCB-#####)", how = "left")
+            results["DSHS_id"] = results["KEY"] 
+            results["DSHS_id"].fillna('missing', inplace=True)
         except: # demo file is in bad format
             results["SourceSite"] = "missing"
             results["Submitter"] = "missing"
-            results["KEY"] = "missing"
+            results["DSHS_id"] = "missing"
     else: # if demo file does not exist
         results["SourceSite"] = "missing"
         results["Submitter"] = "missing"
-        results["KEY"] = "missing"
+        results["DSHS_id"] = "missing"
     
-    results.sort_values(by="HAIseq_ID", ascending=True, inplace=True)
+    results.sort_values(by="WGS_id", ascending=True, inplace=True)
     instrument = run_name.split("_")[2]
     
     if instrument[0] == "M":
         instrument_name = "Illumina MiSeq"
     elif instrument[0] == "V":
         instrument_name = "Illumina NextSeq2000"
-    print(instrument_name)
+    #print(instrument_name)
 
     for i, row in results.iterrows():
         if row["Auto_QC_Outcome"] == "PASS":
-            sample_id = row["HAIseq_ID"]
+            sample_id = row["WGS_id"]
             sourceSite = row["SourceSite"]
             submitter = row["Submitter"]
             #print(sourceSite, submitter)

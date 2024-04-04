@@ -2,6 +2,11 @@ work/
 reads/
 results/
 scripts/
+database/
 miniconda3/
 k2_standard_08gb_20230605/
 phoenix/
+singularity/
+.nextflow/
+.nextflow*
+cluster/
