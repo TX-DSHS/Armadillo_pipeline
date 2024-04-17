@@ -18,7 +18,7 @@ def prep_SRA_submission(results, run_name, basedir):
         try:
             demofile = glob(basedir + "/reads/{}/*.xlsx".format(run_name))[0]
             demo = pd.read_excel(demofile, engine='openpyxl')
-            results = pd.merge(results, demo, left_on = "KEY", right_on = "HAI_WGS_ID(YYYYCB-#####)", how = "left")
+            results = pd.merge(results, demo, left_on = "WGS_id", right_on = "HAI_WGS_ID(YYYYCB-#####)", how = "left")
             results["DSHS_id"] = results["KEY"] 
             results["DSHS_id"].fillna('missing', inplace=True)
         except: # demo file is in bad format

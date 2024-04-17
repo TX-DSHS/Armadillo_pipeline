@@ -57,11 +57,11 @@ for fastq in $basedir/reads/$1/*.gz; do
   fi
 done
 
-# If all the files are smaller than 1Mb, then exit
-if [ ! -f $basedir/reads/$1/*.gz ]; then
-  echo "All the files are smaller than 1Mb, please check the fastq files." >> $basedir/results/$1/armadillo.log
-  exit 1
-fi
+# # If all the files are smaller than 1Mb, then exit
+# if [ ! -f $basedir/reads/$1/*.gz ]; then
+#   echo "All the files are smaller than 1Mb, please check the fastq files." >> $basedir/results/$1/armadillo.log
+#   exit 1
+# fi
 
 # Run PhoeNix pipeline
 reads_path=$basedir/reads/$1

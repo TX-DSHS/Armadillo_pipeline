@@ -11,7 +11,7 @@
 # https://ftp.ncbi.nlm.nih.gov/pathogen/Antimicrobial_resistance/AMRFinderPlus/database/
 # All rights reserved.
 # Author: Jie.Lu@dshs.texas.gov
-version = "2.1-04/04/2024"
+version = "2.1-04/17/2024"
 
 import sys
 import argparse
@@ -119,8 +119,7 @@ logging.info('Number of samples passed: {}'.format(len(results[results["Auto_QC_
 results_to_sra = results[results["Auto_QC_Outcome"] == "PASS"]
 results_to_sra = results_to_sra[results_to_sra["ID"].str.contains('CON') == False] 
 results_metadata = prep_SRA_submission(results_to_sra, run_name, basedir)
-
-
+#print(results_metadata)
 #####################################################################
 # create pdf reports for each passed sample    
 #####################################################################
@@ -233,7 +232,8 @@ for s, id, name, mlst, specimen_id, beta_lactam, other_AR in zip(passSamples, pa
         subprocess.run(["ln", "-s", fastq, filelink])
         # copy fastq files to S3 ARLN/FASTQ folder
         if not fastq.startswith("CON") and specimen_id != "missing": # do not upload controls and samples without HAI-seq IDs.
-           system("aws s3 cp {} {}/ARLN/FASTQ/{} --region us-gov-west-1".format(fastq, aws_bucket, path.basename(fastq))) 
+           fastq_name = specimen_id + "_" + path.basename(fastq)
+           system("aws s3 cp {} {}/ARLN/FASTQ/{} --region us-gov-west-1".format(fastq, aws_bucket, fastq_name)) 
 
     #copy contigs fastas to cluster folder on S3
     #print(specimen_id)
@@ -241,8 +241,9 @@ for s, id, name, mlst, specimen_id, beta_lactam, other_AR in zip(passSamples, pa
     species = name.split(" ")[1]
     contig_fasta = "phx_output/" + s + "/assembly/"+ s + ".contigs.fa.gz"
     fasta_path = basedir + "/cluster/" + genus + "_" + species
-    fasta_name = s + "_" + specimen_id + "_contigs.fa.gz"
-    #print(contig_fasta, fasta_name)
+    fasta_name = specimen_id + "_"  + s + "_contigs.fa.gz"
+    #print(contig_fasta, fasta_path, fasta_name)
+    #print(specimen_id)
     if not path.exists(fasta_path):
        system("mkdir {}".format(fasta_path))
     else:
