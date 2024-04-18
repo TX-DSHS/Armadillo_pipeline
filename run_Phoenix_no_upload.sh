@@ -109,13 +109,3 @@ if [ $? -ne 0 ]; then
   aws s3 cp $basedir/results/zip/$1_report.zip $aws_bucket/ARLN/REPORT/$1_report.zip --region us-gov-west-1
   exit 1
 fi
-
-# Zip and copy the results to s3
-zip -rj $basedir/results/zip/$1_report $basedir/results/$1/*.tsv $basedir/results/$1/*.pdf $basedir/results/$1/*.xlsx $basedir/results/$1/*.log $basedir/results/$1/phx_output/multiqc/multiqc_report.html $basedir/results/$1/phx_output/*.tsv $basedir/results/$1/phx_output/*.xlsx
-aws s3 cp $basedir/results/zip/$1_report.zip $aws_bucket/ARLN/REPORT/$1_report.zip --region us-gov-west-1
-
-zip -r $basedir/results/zip/$1_result $basedir/results/$1
-aws s3 cp $basedir/results/zip/$1_result.zip $aws_bucket/ARLN/ANALYSIS_RESULTS/$1_result.zip --region us-gov-west-1
-
-rm $basedir/results/zip/$1_*.zip 
-rm $basedir/reads/zip/$1.zip 
