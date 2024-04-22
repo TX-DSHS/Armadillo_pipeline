@@ -276,7 +276,7 @@ if glob(basedir + "/reads/{}/*.xlsx".format(run_name)):
         demo = pd.read_excel(demofile, engine='openpyxl')
         results = pd.merge(results, demo, left_on = "WGS_id", right_on = "HAI_WGS_ID(YYYYCB-#####)", how = "left")
         results["DSHS_id"] = results["KEY"]
-        column = ["run_name", "WGS_id", "Species", "DSHS_id",
+        column = ["run_name", "WGS_id", "DSHS_id", "Species", 
           "blaKPC", "blaNDM", "blaOXA-48", "blaVIM", "blaIMP", "blaOXA-23", "blaOXA-24/40", "blaOXA-58", 
           "Hypervirulence_Genes", "MLST_1", "MLST_2", "Auto_QC_Outcome", "Auto_QC_Failure_Reason", 
           "Estimated_Coverage", "Genome_Length", "Assembly_Ratio_(STDev)", "#_of_Scaffolds_>500bp", "GC_%", 
