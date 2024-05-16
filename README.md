@@ -16,7 +16,7 @@ git reset --hard
 curl -sL \
   "https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh" > \
   "Miniconda3.sh"
-rm Miniconda3.sh
+bash Miniconda3.sh
 ```
 Do you accept the license terms? [yes|no]
 >>> yes
@@ -30,14 +30,15 @@ Miniconda3 will now be installed into this location:
 
 [/home/dnalab/miniconda3] >>> /bioinformatics/Armadillo_pipeline/miniconda3
 
-
+```bash
+rm Miniconda3.sh
+```
 
 ## Create a conda environment installing Singularity and nextflow:
 ```bash
 source /bioinformatics/Armadillo_pipeline/miniconda3/etc/profile.d/conda.sh
 conda create -n nextflow -c conda-forge -c bioconda openjdk==11.0.20 singularity nextflow
-conda -n nextflow export --file requirements.txt
-conda -n nextflow export --file python_requirements.txt
+conda install -n nextflow --file python_requirements.txt
 ```
 
 ## Download Kraken2 databases and phoenix scripts
