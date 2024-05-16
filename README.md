@@ -37,8 +37,8 @@ rm Miniconda3.sh
 ## Create a conda environment installing Singularity and nextflow:
 ```bash
 source /bioinformatics/Armadillo_pipeline/miniconda3/etc/profile.d/conda.sh
-conda create -n nextflow -c conda-forge -c bioconda openjdk==11.0.20 singularity nextflow
-conda install -n nextflow --file python_requirements.txt
+conda create -n nextflow -c conda-forge -c bioconda openjdk==11.0.20 singularity \
+   nextflow pandas pdfkit prettytable
 ```
 
 ## Download Kraken2 databases and phoenix scripts

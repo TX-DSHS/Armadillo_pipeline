@@ -85,7 +85,7 @@ cd $out_path
 mkdir -p $basedir/singularity/Phoenix
 export NXF_SINGULARITY_CACHEDIR=$basedir/singularity/Phoenix
 nextflow run cdcgov/phoenix -r $phoenix_version -profile singularity -entry PHOENIX --input $reads_path/samplesheet.csv --kraken2db $basedir/k2_standard_08gb_20230605 --output $out_path
-conda deactivate
+
 # if nextflow failed, exit
 if [ $? -ne 0 ]; then
   echo "Failed to run the PhoeNix pipeline." >> $basedir/results/$1/armadillo.log
@@ -103,6 +103,8 @@ echo "PhoeNix pipeline completed." >> $basedir/results/$1/armadillo.log
 
 # Run Armadillo pipeline
 python3 $basedir/armadillo_phoenix.py -r $1 -d $basedir -a $aws_bucket -c $refGenCatlog >> $basedir/results/$1/armadillo.log
+
+conda deactivate
 
 # if armadillo failed, exit
 if [ $? -ne 0 ]; then
