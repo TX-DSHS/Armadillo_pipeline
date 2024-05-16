@@ -38,7 +38,7 @@ rm Miniconda3.sh
 ```bash
 source /bioinformatics/Armadillo_pipeline/miniconda3/etc/profile.d/conda.sh
 conda create -n nextflow -c conda-forge -c bioconda openjdk==11.0.20 singularity \
-   nextflow pandas pdfkit prettytable
+   nextflow pandas pdfkit prettytable openpyxl
 ```
 
 ## Download Kraken2 databases and phoenix scripts
