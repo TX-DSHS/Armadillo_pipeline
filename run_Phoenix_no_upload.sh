@@ -17,12 +17,13 @@ if [ $# -eq 0 ]; then
   exit 1
 fi
 
-date >> $basedir/results/$1/armadillo.log
+
 version="2.1-04/02/2024"
 # Read the aws bucket name from file aws_bucket.txt
 aws_bucket=$(cat aws_bucket.txt)
 #aws_bucket="s3://804609861260-bioinformatics-infectious-disease"
 basedir=$PWD
+date >> $basedir/results/$1/armadillo.log
 refGenCatlog="/ReferenceGeneCatalog_3.12_20240205.txt"
 phoenix_version="v2.1.1"
 
@@ -45,7 +46,7 @@ if [ $? -ne 0 ]; then
   echo "Failed to download the fastq files from s3." >> $basedir/results/$1/armadillo.log
   # zip and upload the log file to s3
   zip -rj $basedir/results/zip/$1_report $basedir/results/$1/*.log
-  aws s3 cp $basedir/results/zip/$1_report.zip $aws_bucket/ARLN/REPORT/$1_report.zip --region us-gov-west-1
+  #aws s3 cp $basedir/results/zip/$1_report.zip $aws_bucket/ARLN/REPORT/$1_report.zip --region us-gov-west-1
 
   exit 1
 fi
@@ -82,13 +83,13 @@ cd $out_path
 mkdir -p $basedir/singularity/Phoenix
 export NXF_SINGULARITY_CACHEDIR=$basedir/singularity/Phoenix
 nextflow run cdcgov/phoenix -r $phoenix_version -profile singularity -entry PHOENIX --input $reads_path/samplesheet.csv --kraken2db $basedir/k2_standard_08gb_20230605 --output $out_path
-conda deactivate
+
 # if nextflow failed, exit
 if [ $? -ne 0 ]; then
   echo "Failed to run the PhoeNix pipeline." >> $basedir/results/$1/armadillo.log
   # zip and upload the log file to s3
   zip -rj $basedir/results/zip/$1_report $basedir/results/$1/*.log
-  aws s3 cp $basedir/results/zip/$1_report.zip $aws_bucket/ARLN/REPORT/$1_report.zip --region us-gov-west-1
+  #aws s3 cp $basedir/results/zip/$1_report.zip $aws_bucket/ARLN/REPORT/$1_report.zip --region us-gov-west-1
   exit 1
 fi
 
@@ -100,12 +101,12 @@ echo "PhoeNix pipeline completed." >> $basedir/results/$1/armadillo.log
 
 # Run Armadillo pipeline
 python3 $basedir/armadillo_phoenix.py -r $1 -d $basedir -a $aws_bucket -c $refGenCatlog >> $basedir/results/$1/armadillo.log
-
+conda deactivate
 # if armadillo failed, exit
 if [ $? -ne 0 ]; then
   echo "Failed to run the Armadillo pipeline." >> $basedir/results/$1/armadillo.log
   # zip and upload the log file to s3
   zip -rj $basedir/results/zip/$1_report $basedir/results/$1/*.log
-  aws s3 cp $basedir/results/zip/$1_report.zip $aws_bucket/ARLN/REPORT/$1_report.zip --region us-gov-west-1
+  #aws s3 cp $basedir/results/zip/$1_report.zip $aws_bucket/ARLN/REPORT/$1_report.zip --region us-gov-west-1
   exit 1
 fi

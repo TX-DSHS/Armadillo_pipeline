@@ -6,7 +6,7 @@ https://github.com/CDCgov/phoenix
 ```bash
 git clone https://github.com/TX-DSHS/Armadillo_pipeline.git -b bfx
 
-# Sometimes if there is "\r" or EOF error
+# If seeing CRLF error
 git config core.autocrlf false
 git rm --cached -r .         # Don’t forget the dot at the end
 git reset --hard
@@ -47,6 +47,15 @@ aws s3 cp --recursive s3://804609861260-bioinformatics-infectious-disease/pipeli
 aws s3 cp --recursive s3://804609861260-bioinformatics-infectious-disease/pipeline/ARLN/Phoenix/phoenix ./ --region="us-gov-west-1"
 sudo chmod +x /bioinformatics/Armadillo_pipeline/phoenix/bin/*
 ```
+
+## Troubleshooting
+If seeing CRLF error:
+/usr/bin/env: 'python\r': No such file or directory
+Use dos2unix command to convert nextflow files
+```bash
+dos2unix /home/dnalab/.nextflow/assets/cdcgov/phoenix/bin/*
+```
+
 ## Contributing
 
 Pull requests are welcome. For major changes, please open an issue first
