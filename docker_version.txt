@@ -1,1 +1,0 @@
-Docker version 24.0.5, build ced0996
