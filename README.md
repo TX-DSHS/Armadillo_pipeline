@@ -47,7 +47,14 @@ aws s3 cp --recursive s3://804609861260-bioinformatics-infectious-disease/pipeli
 aws s3 cp --recursive s3://804609861260-bioinformatics-infectious-disease/pipeline/ARLN/Phoenix/phoenix ./ --region="us-gov-west-1"
 sudo chmod +x /bioinformatics/Armadillo_pipeline/phoenix/bin/*
 ```
-
+## To run Armadillo pipeline:
+```bash
+bash run_Phoenix.sh <run_name>
+```
+## To submit passed samples from a completed run:
+```
+bash submit_to_SRA.sh <run_name>
+```
 ## Troubleshooting
 If seeing CRLF error:
 /usr/bin/env: 'python\r': No such file or directory
