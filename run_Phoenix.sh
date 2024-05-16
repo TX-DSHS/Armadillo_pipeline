@@ -17,8 +17,7 @@ if [ $# -eq 0 ]; then
   exit 1
 fi
 
-
-version="2.1-04/02/2024"
+version="2.1-05/15/2024"
 # Read the aws bucket name from file aws_bucket.txt
 aws_bucket=$(cat aws_bucket.txt)
 #aws_bucket="s3://804609861260-bioinformatics-infectious-disease"
@@ -29,6 +28,9 @@ date >> $basedir/results/$1/armadillo.log
 
 mkdir -p $basedir/results
 mkdir -p $basedir/reads
+mkdir -p $basedir/results/zip
+mkdir -p $basedir/reads/zip
+mkdir -p $basedir/cluster
 
 rm -rf $basedir/results/$1
 mkdir -p $basedir/results/$1
