@@ -5,41 +5,43 @@ from glob import glob
 from os import path
 from datetime import date
 
-def prep_SRA_submission(results, run_name):
-    reads_dir = "/home/dnalab/reads/{}/".format(run_name)
-    metadata = pd.read_csv("/home/jiel/bin/armadillo/template/SRA_metadata_template.txt", sep="\t", header=0, index_col=None)
-    attribute = pd.read_csv("/home/jiel/bin/armadillo/template/attribute_template.txt", sep="\t", header=0, index_col=None)
+def prep_SRA_submission(results, run_name, basedir):
+    
+    reads_dir = basedir+"/reads/{}/".format(run_name)
+    metadata = pd.read_csv(basedir + "/template/SRA_metadata_template.txt", sep="\t", header=0, index_col=None)
+    attribute = pd.read_csv(basedir + "/template/attribute_template.txt", sep="\t", header=0, index_col=None)
     
     # Check if demo file exists
 
-    if glob("/home/dnalab/reads/{}/*.xlsx".format(run_name)):
+    if glob(basedir + "/reads/{}/*.xlsx".format(run_name)):
+        # if demo file exists
         try:
-            demofile = glob("/home/dnalab/reads/{}/*.xlsx".format(run_name))[0]
+            demofile = glob(basedir + "/reads/{}/*.xlsx".format(run_name))[0]
             demo = pd.read_excel(demofile, engine='openpyxl')
-            results = pd.merge(results, demo, left_on = "HAIseq_ID", right_on = "HAI_WGS_ID(YYYYCB-#####)", how = "left")
-            results["KEY"].fillna('missing', inplace=True)
-            
+            results = pd.merge(results, demo, left_on = "WGS_id", right_on = "HAI_WGS_ID(YYYYCB-#####)", how = "left")
+            results["DSHS_id"] = results["KEY"] 
+            results["DSHS_id"].fillna('missing', inplace=True)
         except: # demo file is in bad format
             results["SourceSite"] = "missing"
             results["Submitter"] = "missing"
-            results["KEY"] = "missing"
+            results["DSHS_id"] = "missing"
     else: # if demo file does not exist
         results["SourceSite"] = "missing"
         results["Submitter"] = "missing"
-        results["KEY"] = "missing"
+        results["DSHS_id"] = "missing"
     
-    results.sort_values(by="HAIseq_ID", ascending=True, inplace=True)
+    results.sort_values(by="WGS_id", ascending=True, inplace=True)
     instrument = run_name.split("_")[2]
     
     if instrument[0] == "M":
         instrument_name = "Illumina MiSeq"
     elif instrument[0] == "V":
         instrument_name = "Illumina NextSeq2000"
-    print(instrument_name)
+    #print(instrument_name)
 
     for i, row in results.iterrows():
         if row["Auto_QC_Outcome"] == "PASS":
-            sample_id = row["HAIseq_ID"]
+            sample_id = row["WGS_id"]
             sourceSite = row["SourceSite"]
             submitter = row["Submitter"]
             #print(sourceSite, submitter)
@@ -68,4 +70,4 @@ def prep_SRA_submission(results, run_name):
     return results
 
 if __name__ == "__main__":
-    prep_SRA_submission("qc_results.tsv", "AR_221205_M05358")
+    prep_SRA_submission("qc_results.tsv", "AR_221205_M05358", "/bioinformatics/Armadillo_pipeline")

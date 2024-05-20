@@ -17,20 +17,18 @@ if [ $# -eq 0 ]; then
   exit 1
 fi
 
-version="2.1-05/15/2024"
+
+version="2.1-04/02/2024"
 # Read the aws bucket name from file aws_bucket.txt
 aws_bucket=$(cat aws_bucket.txt)
 #aws_bucket="s3://804609861260-bioinformatics-infectious-disease"
 basedir=$PWD
+date >> $basedir/results/$1/armadillo.log
 refGenCatlog="/ReferenceGeneCatalog_3.12_20240205.txt"
 phoenix_version="v2.1.1"
-date >> $basedir/results/$1/armadillo.log
 
 mkdir -p $basedir/results
 mkdir -p $basedir/reads
-mkdir -p $basedir/results/zip
-mkdir -p $basedir/reads/zip
-mkdir -p $basedir/cluster
 
 rm -rf $basedir/results/$1
 mkdir -p $basedir/results/$1
@@ -48,7 +46,7 @@ if [ $? -ne 0 ]; then
   echo "Failed to download the fastq files from s3." >> $basedir/results/$1/armadillo.log
   # zip and upload the log file to s3
   zip -rj $basedir/results/zip/$1_report $basedir/results/$1/*.log
-  aws s3 cp $basedir/results/zip/$1_report.zip $aws_bucket/ARLN/REPORT/$1_report.zip --region us-gov-west-1
+  #aws s3 cp $basedir/results/zip/$1_report.zip $aws_bucket/ARLN/REPORT/$1_report.zip --region us-gov-west-1
 
   exit 1
 fi
@@ -91,7 +89,7 @@ if [ $? -ne 0 ]; then
   echo "Failed to run the PhoeNix pipeline." >> $basedir/results/$1/armadillo.log
   # zip and upload the log file to s3
   zip -rj $basedir/results/zip/$1_report $basedir/results/$1/*.log
-  aws s3 cp $basedir/results/zip/$1_report.zip $aws_bucket/ARLN/REPORT/$1_report.zip --region us-gov-west-1
+  #aws s3 cp $basedir/results/zip/$1_report.zip $aws_bucket/ARLN/REPORT/$1_report.zip --region us-gov-west-1
   exit 1
 fi
 
@@ -103,24 +101,12 @@ echo "PhoeNix pipeline completed." >> $basedir/results/$1/armadillo.log
 
 # Run Armadillo pipeline
 python3 $basedir/armadillo_phoenix.py -r $1 -d $basedir -a $aws_bucket -c $refGenCatlog >> $basedir/results/$1/armadillo.log
-
 conda deactivate
-
 # if armadillo failed, exit
 if [ $? -ne 0 ]; then
   echo "Failed to run the Armadillo pipeline." >> $basedir/results/$1/armadillo.log
   # zip and upload the log file to s3
   zip -rj $basedir/results/zip/$1_report $basedir/results/$1/*.log
-  aws s3 cp $basedir/results/zip/$1_report.zip $aws_bucket/ARLN/REPORT/$1_report.zip --region us-gov-west-1
+  #aws s3 cp $basedir/results/zip/$1_report.zip $aws_bucket/ARLN/REPORT/$1_report.zip --region us-gov-west-1
   exit 1
 fi
-
-# Zip and copy the results to s3
-zip -rj $basedir/results/zip/$1_report $basedir/results/$1/*.tsv $basedir/results/$1/*.pdf $basedir/results/$1/*.xlsx $basedir/results/$1/*.log $basedir/results/$1/phx_output/multiqc/multiqc_report.html $basedir/results/$1/phx_output/*.tsv $basedir/results/$1/phx_output/*.xlsx
-aws s3 cp $basedir/results/zip/$1_report.zip $aws_bucket/ARLN/REPORT/$1_report.zip --region us-gov-west-1
-
-zip -r $basedir/results/zip/$1_result $basedir/results/$1
-aws s3 cp $basedir/results/zip/$1_result.zip $aws_bucket/ARLN/ANALYSIS_RESULTS/$1_result.zip --region us-gov-west-1
-
-rm $basedir/results/zip/$1_*.zip 
-rm $basedir/reads/zip/$1.zip 

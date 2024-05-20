@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # Armadillo pipeline 
 # Author: Jie.Lu@dshs.texas.gov
-version = 0.1-2/21/2023
+version = 1.1-3/29/2024
 
 import sys
 import argparse
@@ -13,7 +13,7 @@ from datetime import date
 import pdfkit
 from prettytable import PrettyTable
 import base64
-from os import path, system
+from os import path, system, getcwd
 import logging
 import subprocess
 from glob import glob
@@ -21,7 +21,7 @@ from lib.prep_SRA_submission import prep_SRA_submission
 from lib.presence_gene_family import check_gene_family
 
 def updateSQLiteTable(results):
-    conn = sqlite3.connect("/home/dnalab/database/arln.sqlite")
+    conn = sqlite3.connect(basedir+"/database/arln.sqlite")
     results.to_sql("results", conn, if_exists="append")
     # cur = conn.cursor()
     # cur.execute("SELECT * FROM results")
@@ -33,7 +33,7 @@ def updateSQLiteTable(results):
 
 def readMetadata():
     # Read sqlite query results into a pandas DataFrame
-    conn = sqlite3.connect("/home/dnalab/database/arln.sqlite")
+    conn = sqlite3.connect(basedir+"/database/arln.sqlite")
     df = pd.read_sql_query("SELECT * from metadata", conn)
 
     # Verify that result of SQL query is stored in the dataframe
@@ -45,13 +45,16 @@ my_parser = argparse.ArgumentParser()
 my_parser.add_argument("-i", help = 'Grandeur output: grandeur_results.tsv', default = "grandeur_results.tsv")
 my_parser.add_argument("-r", help = 'Run name')
 my_parser.add_argument("-c", help = 'Minimal coverage (defaul = 30)', default = 30)
+my_parser.add_argument("-d", help = 'installation dir')
+my_parser.add_argument("-a", help = 'AWS bucket name')
 args = my_parser.parse_args()
 grandeurSummaryFile = args.i
 run_name = args.r
 min_coverage = args.c
-
+basedir = args.d
+aws_bucket = args.a
 logging.basicConfig(filename = 'armadillo.log', filemode = 'a', level = logging.DEBUG)
-logging.info('Armadillo v0.1 starting on run {}'.format(run_name))
+logging.info('Armadillo {} starting on run {}'.format(version, run_name))
 logging.info(str(date.today()))
 
 results = pd.read_csv(grandeurSummaryFile, sep="\t", header=0, index_col=None)
@@ -82,16 +85,17 @@ except:
     pass
 
 # Check genome size and GC content
-ncbi_genome_size = pd.read_csv("/home/jiel/bin/armadillo/genome_size.txt", sep = "\t", header = 0)
+ncbi_genome_size = pd.read_csv(basedir+"/genome_size.txt", sep = "\t", header = 0)
 results["MASH_ID"] = results["mash_genus"] + " " + results["mash_species"]
 results = pd.merge(results, ncbi_genome_size, left_on = "kraken2_top_species", right_on = "Organism_ID", how = "left")
+
 
 #sample_id       sample  seqyclean_pairs_kept    seqyclean_percent_kept  fastqc_1_reads  fastqc_2_reads  mash_genome_size        mash_coverage   mash_genus      mash_species    mash_full       mash_pvalue
 #     mash_distance   fastani_ref_top_hit     fastani_ani_score       fastani_per_aligned_seq_matches quast_gc_%      quast_contigs   quast_N50       quast_length    cg_average_read_length  cg_average_quality      cg_coverage     ref_genome_length       amr_genes       virulence_genes   mlst
 checklist = {}
 carb_genes = ["blaKPC", "blaNDM", "blaOXA-48", "blaVIM", "blaIMP", "blaOXA-23", "blaOXA-24/40", "blaOXA-58"]
 oxa_family = {}
-with open("/home/jiel/bin/armadillo/oxa_family.tsv", "r") as f:
+with open(basedir+"/oxa_family.tsv", "r") as f:
     for line in f:
         line = line.rstrip()
         family, oxa_gene = line.split("\t")
@@ -136,7 +140,7 @@ results.sort_values(by="sample_id", ascending=True, inplace=True)
 # Generate SRA submission files
 results_to_sra = results[results["Status"] == "Complete"]
 results_to_sra = results_to_sra[results_to_sra["sample_id"].str.contains('CON') == False] 
-results_metadata = prep_SRA_submission(results_to_sra, run_name)
+results_metadata = prep_SRA_submission(results_to_sra, run_name, basedir)
 
 passSamples = list(results_metadata[results_metadata["Status"] == "Complete"]["sample"])
 passSample_Ids = list(results_metadata[results_metadata["Status"] == "Complete"]["sample_id"])
@@ -145,13 +149,13 @@ passSample_mlst = list(results_metadata[results_metadata["Status"] == "Complete"
 passSample_specimen_id = list(results_metadata[results_metadata["Status"] == "Complete"]["KEY"])
 amrheader = ["Gene symbol", "Sequence name"]
 
-data_uri = base64.b64encode(open('/home/jiel/bin/armadillo/DSHS_Banner.png', 'rb').read()).decode('utf-8')
+data_uri = base64.b64encode(open(basedir+'/DSHS_Banner.png', 'rb').read()).decode('utf-8')
 img_tag = '<img src="data:image/png;base64,{0}">'.format(data_uri)
-footnote = open("/home/jiel/bin/armadillo/footnote.txt", 'r')
+footnote = open(basedir+"/footnote.txt", 'r')
 footnote = footnote.readlines()
 footnote = ("\n").join(footnote)
 
-reads_dir = "/home/dnalab/reads/{}/".format(run_name)
+reads_dir = basedir+"/reads/{}/".format(run_name)
 subprocess.run(["mkdir", "-p", "SRA_seq"])
 
 for s, id, name, mlst, specimen_id in zip(passSamples, passSample_Ids, passSample_name, passSample_mlst, passSample_specimen_id):
@@ -220,13 +224,13 @@ for s, id, name, mlst, specimen_id in zip(passSamples, passSample_Ids, passSampl
     #copy contigs fastas to cluster
     print(specimen_id)
     contig_fasta = "contigs/"+ s + "_contigs.fa"
-    fasta_path = "/home/dnalab/cluster/" + genus + "_" + species
+    fasta_path = basedir+"/cluster/" + genus + "_" + species
     fasta_name = specimen_id + '_' + s + "_contigs.fa"
     if not path.exists(fasta_path):
        system("mkdir {}".format(fasta_path))
     else:
        system("cp {} {}/{}".format(contig_fasta, fasta_path, fasta_name))
-       system("aws s3 cp {} s3://804609861260-bioinformatics-infectious-disease/cluster/{}_{}/{} --region us-gov-west-1".format(contig_fasta, genus, species, fasta_name)) 
+       system("aws s3 cp {} {}/cluster/{}_{}/{} --region us-gov-west-1".format(contig_fasta, aws_bucket, genus, species, fasta_name)) 
 
 results.to_csv("qc_results.tsv", sep = "\t", columns = column, index = False)
 results.to_excel("qc_results.xlsx", header = True, columns = column, index = False)
