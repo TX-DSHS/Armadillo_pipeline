@@ -10,4 +10,5 @@ singularity/
 .nextflow/
 .nextflow*
 cluster/
+sra/
 lambda.nohup
