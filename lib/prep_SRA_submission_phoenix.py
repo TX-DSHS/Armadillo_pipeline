@@ -40,7 +40,7 @@ def prep_SRA_submission(results, run_name, basedir):
     #print(instrument_name)
 
     for i, row in results.iterrows():
-        if row["Auto_QC_Outcome"] == "PASS":
+        if row["Auto_QC_Outcome"] == "PASS" and not row["WGS_id"].startswith("CON"):
             sample_id = row["WGS_id"]
             sourceSite = row["SourceSite"]
             submitter = row["Submitter"]
