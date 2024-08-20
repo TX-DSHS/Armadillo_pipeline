@@ -93,7 +93,7 @@ if [ $? -ne 0 ]; then
   exit 1
 fi
 
-rm -r $out_path/work
+#rm -r $out_path/work
 rm $basedir/results/zip/$1.zip
 # log the completion of the phoenix pipeline and time stamp
 date >> $basedir/results/$1/armadillo.log

@@ -53,11 +53,18 @@ logging.info('Installation dir: {}'.format(basedir))
 logging.info('AWS bucket name: {}'.format(aws_bucket))
 
 #####################################################################
-# Read Phoenix_summary.tsv and extract Hai-seq ID from sample name
+# Read Phoenix_summary.tsv and extract WGS_id (Hai-seq ID) from sample name
 #######################################################################
+def convert_wgs_id(id):
+    if id.startswith("CON"): # if the sample is control, just return the full name of the control
+        return id.split("-")[0]
+    else:  
+        return id[:12]
+
 results = pd.read_csv(phoenixSummaryFile, sep="\t", header=0, index_col=None)
-#results["HAIseq_ID"] = results["ID"].str[:12]
-results["WGS_id"] = results["ID"].str[:12]
+
+results["WGS_id"] = results["ID"].apply(convert_wgs_id)
+
 results["run_name"] = run_name
 
 # Replace missing values with "Not detected" for the AR gene columns
@@ -117,7 +124,7 @@ results.sort_values(by="WGS_id", ascending=True, inplace=True)
 logging.info('Number of samples passed: {}'.format(len(results[results["Auto_QC_Outcome"] == "PASS"])))
 
 results_to_sra = results[results["Auto_QC_Outcome"] == "PASS"]
-results_to_sra = results_to_sra[results_to_sra["ID"].str.contains('CON') == False] 
+#results_to_sra = results_to_sra[results_to_sra["ID"].str.contains('CON') == False] 
 results_metadata = prep_SRA_submission(results_to_sra, run_name, basedir)
 #print(results_metadata)
 #####################################################################
