@@ -36,7 +36,7 @@ def prep_SRA_submission(results, run_name, basedir):
     if instrument[0] == "M":
         instrument_name = "Illumina MiSeq"
     elif instrument[0] == "V":
-        instrument_name = "Illumina NextSeq2000"
+        instrument_name = "NextSeq 2000"
     #print(instrument_name)
 
     for i, row in results.iterrows():
