@@ -37,14 +37,14 @@ rm Miniconda3.sh
 ## Create a conda environment installing Singularity and nextflow:
 ```bash
 source /bioinformatics/Armadillo_pipeline/miniconda3/etc/profile.d/conda.sh
-conda create -n nextflow -c conda-forge -c bioconda openjdk==11.0.20 singularity \
+conda create -n nextflow -c conda-forge -c bioconda python=3.6.9 openjdk==11.0.20 singularity \
    nextflow pandas pdfkit prettytable openpyxl
 ```
 
 ## Download Kraken2 databases and phoenix scripts
 ```bash
-aws s3 cp --recursive s3://804609861260-bioinformatics-infectious-disease/pipeline/kraken2_db/k2_standard_08gb_20230605 ./ --region="us-gov-west-1"
-aws s3 cp --recursive s3://804609861260-bioinformatics-infectious-disease/pipeline/ARLN/Phoenix/phoenix ./ --region="us-gov-west-1"
+aws s3 cp --recursive s3://804609861260-bioinformatics-infectious-disease/pipeline/kraken2_db/k2_standard_08gb_20230605 /bioinformatics/Armadillo_pipeline/k2_standard_08gb_20230605/ --region="us-gov-west-1"
+aws s3 cp --recursive s3://804609861260-bioinformatics-infectious-disease/pipeline/ARLN/Phoenix/phoenix /bioinformatics/Armadillo_pipeline/phoenix/ --region="us-gov-west-1"
 sudo chmod +x /bioinformatics/Armadillo_pipeline/phoenix/bin/*
 ```
 ## To run Armadillo pipeline:
