@@ -37,7 +37,7 @@ rm Miniconda3.sh
 ## Create a conda environment installing Singularity and nextflow:
 ```bash
 source /bioinformatics/Armadillo_pipeline/miniconda3/etc/profile.d/conda.sh
-conda create -n nextflow -c conda-forge -c bioconda python=3.6.9 openjdk==11.0.20 singularity \
+conda create -n nextflow -c conda-forge -c bioconda python=3.6 openjdk==11.0.20 singularity \
    nextflow pandas pdfkit prettytable openpyxl
 ```
 
