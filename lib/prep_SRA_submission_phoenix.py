@@ -58,6 +58,8 @@ def prep_SRA_submission(results, run_name, basedir):
             
             if row["Species"] == "Staphylococcus aureus":
                 bioproject = "PRJNA533550"
+            elif row["Species"] == "Neisseria meningitidis" or row["Species"] == "Haemophilus influenzae":
+                bioproject = "PRJNA1170207"
             else:
                 bioproject = "PRJNA288601"
                 
@@ -70,4 +72,4 @@ def prep_SRA_submission(results, run_name, basedir):
     return results
 
 if __name__ == "__main__":
-    prep_SRA_submission("qc_results.tsv", "AR_221205_M05358", "/bioinformatics/Armadillo_pipeline")
+    prep_SRA_submission("qc_results.tsv", "AR_250210_M03431", "/bioinformatics/Armadillo_pipeline")
