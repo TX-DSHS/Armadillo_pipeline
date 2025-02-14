@@ -60,6 +60,8 @@ def prep_SRA_submission(results, run_name, basedir):
                 bioproject = "PRJNA533550"
             elif row["Species"] == "Neisseria meningitidis" or row["Species"] == "Haemophilus influenzae":
                 bioproject = "PRJNA1170207"
+            elif row["Species"] == "Neisseria gonorrhea":
+                bioproject = "PRJNA894547"
             else:
                 bioproject = "PRJNA288601"
                 
