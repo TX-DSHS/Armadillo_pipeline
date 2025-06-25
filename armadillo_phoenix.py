@@ -240,7 +240,7 @@ for s, id, name, mlst, specimen_id, beta_lactam, other_AR in zip(passSamples, pa
         # copy fastq files to S3 ARLN/FASTQ folder
         if not fastq.startswith("CON") and specimen_id != "missing": # do not upload controls and samples without HAI-seq IDs.
            fastq_name = specimen_id + "_" + path.basename(fastq)
-           system("aws s3 cp {} {}/ARLN/FASTQ/{} --region us-gov-west-1".format(fastq, aws_bucket, fastq_name)) 
+           system("aws s3 cp {} {}/ARLN/FASTQ/{}".format(fastq, aws_bucket, fastq_name)) 
 
     #copy contigs fastas to cluster folder on S3
     #print(specimen_id)
@@ -256,7 +256,7 @@ for s, id, name, mlst, specimen_id, beta_lactam, other_AR in zip(passSamples, pa
     else:
        if not fastq.startswith("CON") and specimen_id != "missing":
            system("cp {} {}/{}".format(contig_fasta, fasta_path, fasta_name))
-           system("aws s3 cp {} {}/cluster/{}_{}/{} --region us-gov-west-1".format(contig_fasta, aws_bucket, genus, species, fasta_name)) 
+           system("aws s3 cp {} {}/cluster/{}_{}/{}".format(contig_fasta, aws_bucket, genus, species, fasta_name)) 
 
 #####################################
 # write results to qc_results.xlsx

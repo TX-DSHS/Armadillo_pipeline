@@ -35,16 +35,30 @@ rm Miniconda3.sh
 ```
 
 ## Create a conda environment installing Singularity and nextflow:
+If using Singularity:
 ```bash
 source /bioinformatics/Armadillo_pipeline/miniconda3/etc/profile.d/conda.sh
-conda create -n nextflow -c conda-forge -c bioconda python=3.6 openjdk==11.0.20 singularity \
-   nextflow pandas pdfkit prettytable openpyxl
+conda create -n nextflow -c conda-forge -c bioconda python=3.6 openjdk==11.0.20 singularity=3.6.3 \
+   nextflow=21.10.6 pandas pdfkit prettytable openpyxl
+aws s3 cp --recursive s3://430118851772-bioinformatics-infectious-disease/singularity_images/armadillo_v2/ singularity/
+
 ```
+
+If using Docker:
+```bash
+source /bioinformatics/Armadillo_pipeline/miniconda3/etc/profile.d/conda.sh
+conda create -n nextflow -c conda-forge -c bioconda python=3.6 openjdk==11.0.20 \
+   nextflow=21.10.6 pandas pdfkit prettytable openpyxl
+```
+
+## If using Docker, install it following the documentation:
+
+https://docs.docker.com/engine/install/ubuntu/
 
 ## Download Kraken2 databases and phoenix scripts
 ```bash
-aws s3 cp --recursive s3://804609861260-bioinformatics-infectious-disease/pipeline/kraken2_db/k2_standard_08gb_20230605 /bioinformatics/Armadillo_pipeline/k2_standard_08gb_20230605/ --region="us-gov-west-1"
-aws s3 cp --recursive s3://804609861260-bioinformatics-infectious-disease/pipeline/ARLN/Phoenix/phoenix /bioinformatics/Armadillo_pipeline/phoenix/ --region="us-gov-west-1"
+aws s3 cp --recursive s3://430118851772-bioinformatics-infectious-disease/pipeline/kraken2_db/k2_standard_08gb_20230605 /bioinformatics/Armadillo_pipeline/k2_standard_08gb_20230605/
+aws s3 cp --recursive s3://430118851772--bioinformatics-infectious-disease/pipeline/ARLN/Phoenix/phoenix /bioinformatics/Armadillo_pipeline/phoenix/
 sudo chmod +x /bioinformatics/Armadillo_pipeline/phoenix/bin/*
 ```
 ## To run Armadillo pipeline:
