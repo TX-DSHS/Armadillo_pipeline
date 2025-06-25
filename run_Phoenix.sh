@@ -82,9 +82,9 @@ $basedir/phoenix/bin/create_samplesheet.sh $reads_path > $reads_path/samplesheet
 source $basedir/miniconda3/etc/profile.d/conda.sh
 conda activate nextflow
 cd $out_path
-#mkdir -p $basedir/singularity/Phoenix
-#export NXF_SINGULARITY_CACHEDIR=$basedir/singularity/Phoenix
-nextflow run cdcgov/phoenix -r $phoenix_version -profile docker -entry PHOENIX --input $reads_path/samplesheet.csv --kraken2db $basedir/k2_standard_08gb_20230605 --output $out_path
+mkdir -p $basedir/singularity/Phoenix
+export NXF_SINGULARITY_CACHEDIR=$basedir/singularity/Phoenix
+nextflow run cdcgov/phoenix -r $phoenix_version -profile singularity -entry PHOENIX --input $reads_path/samplesheet.csv --kraken2db $basedir/k2_standard_08gb_20230605 --output $out_path
 
 # if nextflow failed, exit
 if [ $? -ne 0 ]; then
