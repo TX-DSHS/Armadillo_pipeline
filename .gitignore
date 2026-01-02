@@ -13,3 +13,4 @@ singularity/
 cluster/
 lambda.nohup
 test/
+lambda/
