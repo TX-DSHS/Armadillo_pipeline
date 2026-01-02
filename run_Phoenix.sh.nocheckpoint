@@ -44,13 +44,13 @@ echo "Running Armadillo version: "$version > $basedir/results/$1/armadillo.log
 aws s3 cp $aws_bucket/ARLN/RAW_RUNS/$1.zip $basedir/reads/zip
 # if upload failed, upload the log file to aws, exit
 
-if [ $? -ne 0 ]; then
-  echo "Failed to download the fastq files from s3." >> $basedir/results/$1/armadillo.log
-  # zip and upload the log file to s3
-  zip -rj $basedir/results/zip/$1_report $basedir/results/$1/*.log
-  aws s3 cp $basedir/results/zip/$1_report.zip $aws_bucket/ARLN/REPORT/$1_report.zip
-  exit 1
-fi
+#if [ $? -ne 0 ]; then
+#  echo "Failed to download the fastq files from s3." >> $basedir/results/$1/armadillo.log
+#  # zip and upload the log file to s3
+#  zip -rj $basedir/results/zip/$1_report $basedir/results/$1/*.log
+#  aws s3 cp $basedir/results/zip/$1_report.zip $aws_bucket/ARLN/REPORT/$1_report.zip
+#  exit 1
+#fi
 
 rm -rf $basedir/reads/$1
 mkdir $basedir/reads/$1
@@ -86,13 +86,13 @@ export NXF_SINGULARITY_CACHEDIR=$basedir/singularity/Phoenix
 nextflow run cdcgov/phoenix -r $phoenix_version -profile singularity -entry PHOENIX --input $reads_path/samplesheet.csv --kraken2db $basedir/k2_standard_08gb_20230605 --output $out_path
 
 # if nextflow failed, exit
-if [ $? -ne 0 ]; then
-  echo "Failed to run the PhoeNix pipeline." >> $basedir/results/$1/armadillo.log
-  # zip and upload the log file to s3
-  zip -rj $basedir/results/zip/$1_report $basedir/results/$1/*.log
-  aws s3 cp $basedir/results/zip/$1_report.zip $aws_bucket/ARLN/REPORT/$1_report.zip
-  exit 1
-fi
+#if [ $? -ne 0 ]; then
+#  echo "Failed to run the PhoeNix pipeline." >> $basedir/results/$1/armadillo.log
+#  # zip and upload the log file to s3
+#  zip -rj $basedir/results/zip/$1_report $basedir/results/$1/*.log
+#  aws s3 cp $basedir/results/zip/$1_report.zip $aws_bucket/ARLN/REPORT/$1_report.zip
+#  exit 1
+#fi
 
 rm -r $out_path/work
 rm $basedir/results/zip/$1.zip
@@ -106,13 +106,13 @@ python3 $basedir/armadillo_phoenix.py -r $1 -d $basedir -a $aws_bucket -c $refGe
 conda deactivate
 
 # if armadillo failed, exit
-if [ $? -ne 0 ]; then
-  echo "Failed to run the Armadillo pipeline." >> $basedir/results/$1/armadillo.log
-  # zip and upload the log file to s3
-  zip -rj $basedir/results/zip/$1_report $basedir/results/$1/*.log
-  aws s3 cp $basedir/results/zip/$1_report.zip $aws_bucket/ARLN/REPORT/$1_report.zip
-  exit 1
-fi
+#if [ $? -ne 0 ]; then
+#  echo "Failed to run the Armadillo pipeline." >> $basedir/results/$1/armadillo.log
+#  # zip and upload the log file to s3
+#  zip -rj $basedir/results/zip/$1_report $basedir/results/$1/*.log
+#  aws s3 cp $basedir/results/zip/$1_report.zip $aws_bucket/ARLN/REPORT/$1_report.zip
+#  exit 1
+#fi
 
 # Zip and copy the results to s3
 zip -rj $basedir/results/zip/$1_report $basedir/results/$1/*.tsv $basedir/results/$1/*.pdf $basedir/results/$1/*.xlsx $basedir/results/$1/*.html $basedir/results/$1/*.log $basedir/results/$1/phx_output/multiqc/multiqc_report.html $basedir/results/$1/phx_output/*.tsv $basedir/results/$1/phx_output/*.xlsx

@@ -249,14 +249,14 @@ for s, id, name, mlst, specimen_id, beta_lactam, other_AR in zip(passSamples, pa
     contig_fasta = "phx_output/" + s + "/assembly/"+ s + ".contigs.fa.gz"
     fasta_path = basedir + "/cluster/" + genus + "_" + species
     fasta_name = specimen_id + "_"  + s + "_contigs.fa.gz"
-    #print(contig_fasta, fasta_path, fasta_name)
-    #print(specimen_id)
+    print(contig_fasta, fasta_path, fasta_name)
+    print(specimen_id)
     if not path.exists(fasta_path):
        system("mkdir {}".format(fasta_path))
-    else:
-       if not fastq.startswith("CON") and specimen_id != "missing":
-           system("cp {} {}/{}".format(contig_fasta, fasta_path, fasta_name))
-           system("aws s3 cp {} {}/cluster/{}_{}/{}".format(contig_fasta, aws_bucket, genus, species, fasta_name)) 
+
+    if not fastq.startswith("CON") and specimen_id != "missing":
+       system("cp {} {}/{}".format(contig_fasta, fasta_path, fasta_name))
+       system("aws s3 cp {} {}/cluster/{}_{}/{}".format(contig_fasta, aws_bucket, genus, species, fasta_name)) 
 
 #####################################
 # write results to qc_results.xlsx
