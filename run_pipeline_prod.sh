@@ -24,7 +24,7 @@
 
 
 # Global variable definitions
-version="v1.0.0"
+
 basedir=$PWD
 logfile="$basedir/run_pipeline.log"
 
@@ -134,7 +134,7 @@ echo "SNS Topic ARN: $sns_topicarn" >> $run_logfile
 # Send SNS notification that the pipeline run has started
 message="Pipeline Started Successfully on $(date) with run_id: $1"
 echo "$message" >> $run_logfile
-send_sns_message "$message"
+#send_sns_message "$message"
 
 
 
@@ -166,22 +166,22 @@ done
 
 # Run PhoeNix pipeline
 refGenCatlog="/ReferenceGeneCatalog_3.12_20240205.txt"
-phoenix_version="v2.1.1"
+phoenix_version="v2.2.0"
 reads_path=$basedir/reads/$1
 out_path=$basedir/results/$1
-$basedir/phoenix/bin/create_samplesheet.sh $reads_path > $reads_path/samplesheet.csv
+$basedir/lib/create_samplesheet.sh $reads_path > $reads_path/samplesheet.csv
 source $basedir/miniconda3/etc/profile.d/conda.sh
 conda activate nextflow
 cd $out_path
 mkdir -p $basedir/singularity/Phoenix
 export NXF_SINGULARITY_CACHEDIR=$basedir/singularity/Phoenix
-nextflow run cdcgov/phoenix -r $phoenix_version -profile singularity -entry PHOENIX --input $reads_path/samplesheet.csv --kraken2db $basedir/k2_standard_08gb_20230605 --output $out_path
+nextflow run cdcgov/phoenix -r $phoenix_version -profile singularity --mode PHOENIX --input $reads_path/samplesheet.csv --kraken2db $basedir/k2_standard_08gb_20230605 --output $out_path
 
 
 # if nextflow failed, exit
 if [ $? -ne 0 ]; then
   message="Failed to run the PhoeNix pipeline."
-  handle_failure "$message"
+  #handle_failure "$message"
 fi
 
 rm -r $out_path/work
@@ -199,7 +199,7 @@ conda deactivate
 # if armadillo failed, exit
 if [ $? -ne 0 ]; then
   message="Failed to run the Armadillo pipeline."
-  handle_failure "$message"
+  #handle_failure "$message"
 fi
 
 
@@ -215,7 +215,7 @@ rm $basedir/reads/zip/$1.zip
 
 message="Pipeline Finished Successfully on $(date) with run_id: $1"
 echo "$message" >> $run_logfile
-send_sns_message "$message"
+#send_sns_message "$message"
 
 
 

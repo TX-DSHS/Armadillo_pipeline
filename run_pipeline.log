@@ -1,8 +1,0 @@
-Script Arguments:
-Arg: AR_251231B_VH00729
-Arg: 430118851772-bioinformatics-infectious-disease
-Arg: arn:aws:sns:us-east-1:430118851772:dshs-bioinfo-bacteria-notification
-Fri Jan  2 16:14:45 UTC 2026
-Run Logfile: /bioinformatics/Armadillo_pipeline/results/AR_251231B_VH00729/armadillo.log
-SNS message sent: Pipeline Started Successfully on Fri Jan  2 16:14:45 UTC 2026 with run_id: AR_251231B_VH00729
-SNS message sent: Pipeline Finished Successfully on Fri Jan  2 16:41:17 UTC 2026 with run_id: AR_251231B_VH00729

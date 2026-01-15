@@ -63,7 +63,7 @@ def convert_wgs_id(id):
 
 results = pd.read_csv(phoenixSummaryFile, sep="\t", header=0, index_col=None)
 
-results["WGS_id"] = results["ID"].apply(convert_wgs_id)
+results["WGS_id"] = results["WGS_ID"].apply(convert_wgs_id)
 
 results["run_name"] = run_name
 
@@ -130,9 +130,9 @@ results_metadata = prep_SRA_submission(results_to_sra, run_name, basedir)
 #####################################################################
 # create pdf reports for each passed sample    
 #####################################################################
-passSamples = list(results_metadata[results_metadata["Auto_QC_Outcome"] == "PASS"]["ID"])
+passSamples = list(results_metadata[results_metadata["Auto_QC_Outcome"] == "PASS"]["WGS_ID"])
 passSample_Ids = list(results_metadata[results_metadata["Auto_QC_Outcome"] == "PASS"]["WGS_id"])
-passSample_name = list(results_metadata[results_metadata["Auto_QC_Outcome"] == "PASS"]["Species"])
+passSample_name = list(results_metadata[results_metadata["Auto_QC_Outcome"] == "PASS"]["Final_Taxa_ID"])
 passSample_mlst = list(results_metadata[results_metadata["Auto_QC_Outcome"] == "PASS"]["MLST_1"])
 passSample_specimen_id = list(results_metadata[results_metadata["Auto_QC_Outcome"] == "PASS"]["DSHS_id"])
 passSample_beta_lactam = list(results_metadata[results_metadata["Auto_QC_Outcome"] == "PASS"]["GAMMA_Beta_Lactam_Resistance_Genes"])
@@ -268,12 +268,12 @@ for s, id, name, mlst, specimen_id, beta_lactam, other_AR in zip(passSamples, pa
 # Plasmid_Incompatibility_Replicons	Auto_QC_Failure_Reason
 
 # If no demo file is provided, no "DSHS_id" column will be involed.
-column = ["run_name", "WGS_id", "Species", 
+column = ["run_name", "WGS_id", "Final_Taxa_ID", 
           "blaKPC", "blaNDM", "blaOXA-48", "blaVIM", "blaIMP", "blaOXA-23", "blaOXA-24/40", "blaOXA-58", 
           "Hypervirulence_Genes", "MLST_1", "MLST_2", "Auto_QC_Outcome", "Auto_QC_Failure_Reason", 
           "Estimated_Coverage", "Genome_Length", "Assembly_Ratio_(STDev)", "#_of_Scaffolds_>500bp", "GC_%", 
-          "GAMMA_Beta_Lactam_Resistance_Genes", "GAMMA_Other_AR_Genes",
-          "Taxa_Confidence", "Taxa_Coverage", "Taxa_Source", "Kraken2_Trimd", "Kraken2_Weighted"
+          "GAMMA_Beta_Lactam_Resistance_Genes", "GAMMA_Other_AR_Genes", "ShigaPass_Organism",
+          "Taxa_Source", "Kraken2_Trimd", "Kraken2_Weighted"
          ]
 
 # Write to qc_results
@@ -283,12 +283,12 @@ if glob(basedir + "/reads/{}/*.xlsx".format(run_name)):
         demo = pd.read_excel(demofile, engine='openpyxl')
         results = pd.merge(results, demo, left_on = "WGS_id", right_on = "HAI_WGS_ID(YYYYCB-#####)", how = "left")
         results["DSHS_id"] = results["KEY"]
-        column = ["run_name", "WGS_id", "DSHS_id", "Species", 
+        column = ["run_name", "WGS_id", "DSHS_id", "Final_Taxa_ID", 
           "blaKPC", "blaNDM", "blaOXA-48", "blaVIM", "blaIMP", "blaOXA-23", "blaOXA-24/40", "blaOXA-58", 
           "Hypervirulence_Genes", "MLST_1", "MLST_2", "Auto_QC_Outcome", "Auto_QC_Failure_Reason", 
           "Estimated_Coverage", "Genome_Length", "Assembly_Ratio_(STDev)", "#_of_Scaffolds_>500bp", "GC_%", 
-          "GAMMA_Beta_Lactam_Resistance_Genes", "GAMMA_Other_AR_Genes",
-          "Taxa_Confidence", "Taxa_Coverage", "Taxa_Source", "Kraken2_Trimd", "Kraken2_Weighted"
+          "GAMMA_Beta_Lactam_Resistance_Genes", "GAMMA_Other_AR_Genes", "ShigaPass_Organism",
+          "Taxa_Source", "Kraken2_Trimd", "Kraken2_Weighted"
          ]
  
     except: # if demo file format is incorrect, do not include "DSHS_ID" in qc_results.tsv 

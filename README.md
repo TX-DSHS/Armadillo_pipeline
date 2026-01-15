@@ -38,8 +38,9 @@ rm Miniconda3.sh
 If using Singularity:
 ```bash
 source /bioinformatics/Armadillo_pipeline/miniconda3/etc/profile.d/conda.sh
-conda create -n nextflow -c conda-forge -c bioconda python=3.6 openjdk==11.0.20 singularity=3.6.3 \
-   nextflow=21.10.6 pandas pdfkit prettytable openpyxl
+conda create -n nextflow -c conda-forge -c bioconda python=3.6 openjdk==17 singularity=3.8.4 \
+   nextflow=25.04.2 pandas pdfkit prettytable openpyxl
+   
 aws s3 cp --recursive s3://430118851772-bioinformatics-infectious-disease/singularity_images/armadillo_v2/ singularity/
 
 ```
@@ -47,8 +48,8 @@ aws s3 cp --recursive s3://430118851772-bioinformatics-infectious-disease/singul
 If using Docker:
 ```bash
 source /bioinformatics/Armadillo_pipeline/miniconda3/etc/profile.d/conda.sh
-conda create -n nextflow -c conda-forge -c bioconda python=3.6 openjdk==11.0.20 \
-   nextflow=21.10.6 pandas pdfkit prettytable openpyxl
+conda create -n nextflow -c conda-forge -c bioconda python=3.6 openjdk==17 \
+   nextflow=25.04.2 pandas pdfkit prettytable openpyxl
 ```
 
 ## If using Docker, install it following the documentation:

@@ -1,0 +1,5 @@
+sample,fastq_1,fastq_2
+2025CB-00821-TX-VH00729-251124C_S83,/bioinformatics/test/Armadillo_pipeline/reads/AR_251124C_VH00729/2025CB-00821-TX-VH00729-251124C_S83_R1_001.fastq.gz,/bioinformatics/test/Armadillo_pipeline/reads/AR_251124C_VH00729/2025CB-00821-TX-VH00729-251124C_S83_R2_001.fastq.gz
+2025CB-00822-TX-VH00729-251124C_S84,/bioinformatics/test/Armadillo_pipeline/reads/AR_251124C_VH00729/2025CB-00822-TX-VH00729-251124C_S84_R1_001.fastq.gz,/bioinformatics/test/Armadillo_pipeline/reads/AR_251124C_VH00729/2025CB-00822-TX-VH00729-251124C_S84_R2_001.fastq.gz
+CONAB0729251124C-TX-VH00729-251124C_S82,/bioinformatics/test/Armadillo_pipeline/reads/AR_251124C_VH00729/CONAB0729251124C-TX-VH00729-251124C_S82_R1_001.fastq.gz,/bioinformatics/test/Armadillo_pipeline/reads/AR_251124C_VH00729/CONAB0729251124C-TX-VH00729-251124C_S82_R2_001.fastq.gz
+CONSE0729251124C-TX-VH00729-251124C_S81,/bioinformatics/test/Armadillo_pipeline/reads/AR_251124C_VH00729/CONSE0729251124C-TX-VH00729-251124C_S81_R1_001.fastq.gz,/bioinformatics/test/Armadillo_pipeline/reads/AR_251124C_VH00729/CONSE0729251124C-TX-VH00729-251124C_S81_R2_001.fastq.gz

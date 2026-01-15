@@ -56,16 +56,16 @@ def prep_SRA_submission(results, run_name, basedir):
                "filename": fastq_files[0],	"filename2": fastq_files[1], "filename3": "", "filename4": "",	"assembly": "",	"fasta_file": ""}
             metadata = metadata.append(new_row_metadata, ignore_index = True)
             
-            if row["Species"] == "Staphylococcus aureus":
+            if row["Final_Taxa_ID"] == "Staphylococcus aureus":
                 bioproject = "PRJNA533550"
-            elif row["Species"] == "Neisseria meningitidis" or row["Species"] == "Haemophilus influenzae":
+            elif row["Final_Taxa_ID"] == "Neisseria meningitidis" or row["Final_Taxa_ID"] == "Haemophilus influenzae":
                 bioproject = "PRJNA1170207"
-            elif row["Species"] == "Neisseria gonorrhea":
+            elif row["Final_Taxa_ID"] == "Neisseria gonorrhea":
                 bioproject = "PRJNA894547"
             else:
                 bioproject = "PRJNA288601"
                 
-            new_row_attr = {"*sample_name": sample_id, "bioproject_accession": bioproject, "*organism": row["Species"], 
+            new_row_attr = {"*sample_name": sample_id, "bioproject_accession": bioproject, "*organism": row["Final_Taxa_ID"], 
                              "*collection_date": date.today().year, "*geo_loc_name": "USA", "*host":"Homo sapiens",	
                             "*host_disease":"missing",	"*isolate": sample_id, "*isolation_source": sourceSite, "*sample_type": "whole organism"}
             attribute = attribute.append(new_row_attr, ignore_index = True)

@@ -6,6 +6,7 @@ scripts/
 database/
 miniconda3/
 k2_standard_08gb_20230605/
+kraken2_db/
 phoenix/
 singularity/
 .nextflow/
