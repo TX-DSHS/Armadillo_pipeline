@@ -175,7 +175,7 @@ conda activate nextflow
 cd $out_path
 mkdir -p $basedir/singularity/Phoenix
 export NXF_SINGULARITY_CACHEDIR=$basedir/singularity/Phoenix
-nextflow run cdcgov/phoenix -r $phoenix_version -profile singularity --mode PHOENIX --input $reads_path/samplesheet.csv --kraken2db $basedir/k2_standard_08gb_20230605 --output $out_path
+nextflow run cdcgov/phoenix -r $phoenix_version -profile singularity --mode PHOENIX --input $reads_path/samplesheet.csv --kraken2db $basedir/k2_standard_08gb_20230605 --outdir $out_path
 
 
 # if nextflow failed, exit
@@ -204,7 +204,7 @@ fi
 
 
 # Zip and copy the results to S3 /ARLN/REPORT 
-zip -rj $basedir/results/zip/$1_report $basedir/results/$1/*.tsv $basedir/results/$1/*.pdf $basedir/results/$1/*.xlsx $basedir/results/$1/*.html $basedir/results/$1/*.log $basedir/results/$1/phx_output/multiqc/multiqc_report.html $basedir/results/$1/phx_output/*.tsv $basedir/results/$1/phx_output/*.xlsx
+zip -rj $basedir/results/zip/$1_report $basedir/results/$1/*.tsv $basedir/results/$1/*.pdf $basedir/results/$1/*.xlsx $basedir/results/$1/*.html $basedir/results/$1/*.log $basedir/results/$1/multiqc/multiqc_report.html $basedir/results/$1/*.tsv $basedir/results/$1/*.xlsx
 aws s3 cp $basedir/results/zip/$1_report.zip $aws_bucket/ARLN/REPORT/$1_report.zip
 # Zip and copy the results to S3 /ARLN/ANALYSIS_RESULTS
 zip -r $basedir/results/zip/$1_result $basedir/results/$1
